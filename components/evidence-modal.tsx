@@ -1,0 +1,237 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import {
+  CalendarClock,
+  ExternalLink,
+  ShieldCheck,
+  Swords,
+  X,
+} from "lucide-react";
+
+import {
+  allianceBadge,
+  allianceDisplayName,
+  formatBattleTimestamp,
+  playerNameWithoutAlliance,
+  reportTypeLabel,
+  safeHttpUrl,
+} from "@/lib/format";
+import type { ViolationRecord } from "@/lib/types";
+
+interface EvidenceModalProps {
+  record: ViolationRecord;
+  onClose: () => void;
+}
+
+export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const imageUrl = safeHttpUrl(record.imageUrl);
+  const alliance = allianceDisplayName(record.offendingAlliance);
+  const offenderName = playerNameWithoutAlliance(
+    record.offendingPlayer,
+    record.offendingAlliance,
+  );
+  const victimName = record.victimPlayer
+    ? playerNameWithoutAlliance(record.victimPlayer, "")
+    : null;
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    function onKeyDown(event: KeyboardEvent): void {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.offsetParent !== null);
+
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && (active === first || !dialogRef.current.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = originalOverflow;
+      previouslyFocused?.focus();
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="evidence-dialog-title"
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-3 backdrop-blur-md sm:p-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        className="relative max-h-[92dvh] w-full max-w-4xl animate-slide-up overflow-y-auto rounded-sm border border-white/15 bg-void-900 shadow-2xl"
+      >
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-white/10 bg-void-900/95 px-4 py-3.5 backdrop-blur sm:px-6">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-acid">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Confirmed NAP evidence
+            </div>
+            <h2
+              id="evidence-dialog-title"
+              className="mt-1 truncate font-display text-[17px] font-bold text-white sm:text-xl"
+            >
+              战报证据 · [{alliance}] {offenderName}
+            </h2>
+          </div>
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            aria-label="关闭证据预览"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-white/10 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
+          <div className="relative flex min-h-[260px] items-center justify-center overflow-hidden border-b border-white/10 bg-black/60 p-2 sm:min-h-[420px] lg:border-b-0 lg:border-r">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-fine-grid opacity-25 [background-size:26px_26px]"
+            />
+            {imageUrl ? (
+              // The evidence is user content hosted in Supabase Storage.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageUrl}
+                alt={`服务器 837 违规证据：${alliance} 联盟玩家 ${offenderName} 的战报截图`}
+                className="relative z-10 max-h-[64dvh] w-auto max-w-full object-contain"
+              />
+            ) : (
+              <div className="relative z-10 flex flex-col items-center gap-3 text-zinc-500">
+                <ShieldCheck className="h-8 w-8 text-zinc-700" />
+                <span className="text-xs">该记录没有可用的截图证据</span>
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 sm:p-6">
+            <div className="inline-flex items-center gap-2 rounded-sm border border-acid/25 bg-acid/[0.07] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-acid">
+              <span className="h-1.5 w-1.5 rounded-full bg-acid" />
+              {reportTypeLabel(record.reportType)}
+            </div>
+
+            <dl className="mt-5 space-y-4">
+              <div>
+                <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
+                  违规联盟
+                </dt>
+                <dd className="mt-1 font-mono text-lg font-semibold text-white">
+                  {allianceBadge(record.offendingAlliance)}
+                </dd>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="min-w-0">
+                  <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
+                    违规玩家
+                  </dt>
+                  <dd
+                    className="mt-1 truncate text-[13px] font-medium text-zinc-200"
+                    title={offenderName}
+                  >
+                    {offenderName}
+                  </dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
+                    来源服务器
+                  </dt>
+                  <dd className="mt-1 font-mono text-[13px] font-medium text-zinc-200">
+                    #{record.offendingServer}
+                  </dd>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-sm border border-white/[0.07] bg-white/[0.025] p-3">
+                <Swords className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+                <div className="min-w-0">
+                  <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
+                    战报中的受害方
+                  </dt>
+                  <dd className="mt-1 text-[12px] leading-relaxed text-zinc-300">
+                    {victimName || "未展示 / 未识别到受害方"}
+                  </dd>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+                <div>
+                  <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
+                    战报时间 · UTC
+                  </dt>
+                  <dd className="mt-1 font-mono text-[13px] text-zinc-200">
+                    {formatBattleTimestamp(record.battleTimestamp)}
+                  </dd>
+                </div>
+              </div>
+
+              <div className="border-t border-white/10 pt-4">
+                <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
+                  判定说明
+                </dt>
+                <dd className="mt-1.5 text-[12px] leading-relaxed text-zinc-400">
+                  {record.reason}
+                </dd>
+              </div>
+            </dl>
+
+            {imageUrl ? (
+              <a
+                href={imageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex h-10 w-full items-center justify-center gap-2 rounded-sm border border-white/15 bg-white/[0.04] font-display text-[11px] font-semibold uppercase tracking-[0.1em] text-zinc-200 transition-colors hover:border-acid/50 hover:text-acid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
+              >
+                在新标签页打开原图
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}

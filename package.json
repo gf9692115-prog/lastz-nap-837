@@ -1,0 +1,35 @@
+{
+  "name": "lastz-nap-837",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Last Z Server 837 NAP violation detector",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "packageManager": "pnpm@11.28.5",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.119.2",
+    "lucide-react": "1.76.0",
+    "next": "15.5.29",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "3.4.17",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
