@@ -1,16 +1,10 @@
-import "server-only";
-
-import {
-  getSupabaseAdmin,
-  getSupabaseConfigStatus,
-  SupabaseConfigurationError,
-} from "./supabase/admin";
+import { getSupabaseBrowserClient } from "../supabase/browser";
 import type {
   DashboardData,
   LeaderboardEntry,
   ReportType,
   ViolationRecord,
-} from "./types";
+} from "../types";
 
 interface LeaderboardRow {
   alliance: string;
@@ -33,24 +27,27 @@ interface ViolationRow {
   image_url: string | null;
 }
 
-const EMPTY_DASHBOARD: DashboardData = {
-  leaderboard: [],
-  latestViolations: [],
-  stats: {
-    violationCount: 0,
-    allianceCount: 0,
-  },
-  dataUnavailable: true,
-};
+function emptyDashboard(): DashboardData {
+  return {
+    leaderboard: [],
+    latestViolations: [],
+    stats: {
+      violationCount: 0,
+      allianceCount: 0,
+    },
+    dataUnavailable: true,
+  };
+}
 
+/**
+ * Read the public leaderboard and confirmed evidence rows through the anon /
+ * publishable key. RLS exposes only is_violation = true rows to the browser.
+ */
 export async function getDashboardData(): Promise<DashboardData> {
-  if (!getSupabaseConfigStatus().configured) {
-    return EMPTY_DASHBOARD;
-  }
+  const supabase = getSupabaseBrowserClient();
+  if (!supabase) return emptyDashboard();
 
   try {
-    const supabase = getSupabaseAdmin();
-
     const [leaderboardResult, recentResult, countResult] = await Promise.all([
       supabase
         .from("alliance_leaderboard")
@@ -80,7 +77,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     if (recentResult.error) throw recentResult.error;
     if (countResult.error) throw countResult.error;
 
-    const leaderboard = ((leaderboardResult.data ?? []) as unknown as LeaderboardRow[]).map(
+    const leaderboard = (
+      (leaderboardResult.data ?? []) as unknown as LeaderboardRow[]
+    ).map(
       (row): LeaderboardEntry => ({
         alliance: row.alliance,
         violationCount: Number(row.violation_count) || 0,
@@ -117,13 +116,10 @@ export async function getDashboardData(): Promise<DashboardData> {
       dataUnavailable: false,
     };
   } catch (error) {
-    if (error instanceof SupabaseConfigurationError) {
-      return EMPTY_DASHBOARD;
-    }
     console.error(
-      "[dashboard] failed to load data:",
+      "[dashboard] failed to load public data:",
       error instanceof Error ? error.message : "unknown error",
     );
-    return EMPTY_DASHBOARD;
+    return emptyDashboard();
   }
 }

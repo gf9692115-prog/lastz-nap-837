@@ -1,12 +1,14 @@
-import "server-only";
-
 import {
   DEEPSEEK_BASE_URL_DEFAULT,
   DEEPSEEK_IMAGE_MIME_TYPES,
   DEEPSEEK_MODEL_DEFAULT,
   HOME_SERVER_ID,
-} from "./constants";
-import type { ReportType, VisionExtraction, VisionPlayer } from "./types";
+} from "./constants.ts";
+import type {
+  ReportType,
+  VisionExtraction,
+  VisionPlayer,
+} from "./types.ts";
 
 export class DeepSeekConfigurationError extends Error {
   constructor(message = "DeepSeek API key is not configured") {
@@ -24,6 +26,17 @@ export class DeepSeekAnalysisError extends Error {
 
 const REQUEST_TIMEOUT_MS = 50_000;
 const MAX_OUTPUT_TOKENS = 1_800;
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(
+      ...bytes.subarray(index, index + chunkSize),
+    );
+  }
+  return btoa(binary);
+}
 
 function buildSystemInstruction(currentYear: number): string {
   return `You are a strict visual data extractor for battle reports from the mobile game "Last Z: Survival Shooter". The home server is ALWAYS #${HOME_SERVER_ID}. You do not decide guilt or apply NAP policy; you only transcribe what is visibly printed so a deterministic backend can judge it.
@@ -207,9 +220,18 @@ interface DeepSeekChatResponse {
   };
 }
 
+export interface DeepSeekConfig {
+  apiKey: string;
+  baseUrl?: string;
+  model?: string;
+  timeoutMs?: number;
+  currentYear?: number;
+}
+
 export interface AnalyzeImageInput {
-  buffer: Buffer;
+  bytes: Uint8Array;
   mimeType: string;
+  config: DeepSeekConfig;
 }
 
 /**
@@ -219,10 +241,11 @@ export interface AnalyzeImageInput {
  * before any business rules run.
  */
 export async function analyzeReportImage({
-  buffer,
+  bytes,
   mimeType,
+  config,
 }: AnalyzeImageInput): Promise<VisionExtraction> {
-  const apiKey = process.env.DEEPSEEK_API_KEY?.trim();
+  const apiKey = config.apiKey?.trim();
   if (!apiKey) {
     throw new DeepSeekConfigurationError();
   }
@@ -231,9 +254,9 @@ export async function analyzeReportImage({
     throw new DeepSeekAnalysisError(`Unsupported image MIME type: ${mimeType}`);
   }
 
-  const model = process.env.DEEPSEEK_MODEL?.trim() || DEEPSEEK_MODEL_DEFAULT;
+  const model = config.model?.trim() || DEEPSEEK_MODEL_DEFAULT;
   const configuredBaseUrl =
-    process.env.DEEPSEEK_BASE_URL?.trim() || DEEPSEEK_BASE_URL_DEFAULT;
+    config.baseUrl?.trim() || DEEPSEEK_BASE_URL_DEFAULT;
 
   let baseUrl: URL;
   try {
@@ -243,11 +266,14 @@ export async function analyzeReportImage({
   }
 
   const endpoint = `${baseUrl.toString().replace(/\/+$/u, "")}/chat/completions`;
-  const currentYear = new Date().getUTCFullYear();
-  const dataUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
+  const currentYear = config.currentYear ?? new Date().getUTCFullYear();
+  const dataUrl = `data:${mimeType};base64,${bytesToBase64(bytes)}`;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    config.timeoutMs ?? REQUEST_TIMEOUT_MS,
+  );
 
   let response: Response;
   try {

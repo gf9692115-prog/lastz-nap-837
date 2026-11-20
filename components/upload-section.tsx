@@ -5,7 +5,11 @@ import { NAP_RULES, SITE } from "@/lib/constants";
 import { SectionHeading } from "./section-heading";
 import { UploadZone } from "./upload-zone";
 
-export function UploadSection() {
+interface UploadSectionProps {
+  onUploaded?: () => void | Promise<void>;
+}
+
+export function UploadSection({ onUploaded }: UploadSectionProps) {
   return (
     <section id="upload" className="scroll-mt-24 pt-12 sm:pt-16">
       <SectionHeading
@@ -91,7 +95,7 @@ export function UploadSection() {
               01 IMAGE / 1 RECORD
             </span>
           </div>
-          <UploadZone />
+          <UploadZone onUploaded={onUploaded} />
         </div>
       </div>
     </section>

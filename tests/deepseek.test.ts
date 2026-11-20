@@ -1,12 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("server-only", () => ({}));
-
 import {
   analyzeReportImage,
   DeepSeekAnalysisError,
   DeepSeekConfigurationError,
-} from "./deepseek";
+  type DeepSeekConfig,
+} from "../supabase/functions/_shared/deepseek.ts";
+
+const CONFIG: DeepSeekConfig = {
+  apiKey: "test-deepseek-key",
+  baseUrl: "https://api.deepseek.test",
+  model: "deepseek-flash",
+  currentYear: 2026,
+};
 
 const EMPTY_PLAYER = {
   rawDisplayName: "",
@@ -45,9 +51,10 @@ function completionResponse(content: unknown, status = 200): Response {
     JSON.stringify({
       choices: [
         {
-          finish_reason: status === 200 ? "stop" : "stop",
+          finish_reason: "stop",
           message: {
-            content: typeof content === "string" ? content : JSON.stringify(content),
+            content:
+              typeof content === "string" ? content : JSON.stringify(content),
           },
         },
       ],
@@ -59,22 +66,20 @@ function completionResponse(content: unknown, status = 200): Response {
   );
 }
 
+function bytes(value: string): Uint8Array {
+  return new TextEncoder().encode(value);
+}
+
 describe("DeepSeek vision adapter", () => {
   const fetchMock = vi.fn();
 
   beforeEach(() => {
-    process.env.DEEPSEEK_API_KEY = "test-deepseek-key";
-    process.env.DEEPSEEK_BASE_URL = "https://api.deepseek.test";
-    process.env.DEEPSEEK_MODEL = "deepseek-flash";
     vi.stubGlobal("fetch", fetchMock);
     fetchMock.mockReset();
     vi.spyOn(console, "error").mockImplementation(() => undefined);
   });
 
   afterEach(() => {
-    delete process.env.DEEPSEEK_API_KEY;
-    delete process.env.DEEPSEEK_BASE_URL;
-    delete process.env.DEEPSEEK_MODEL;
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -93,8 +98,9 @@ describe("DeepSeek vision adapter", () => {
     );
 
     const result = await analyzeReportImage({
-      buffer: Buffer.from([0xff, 0xd8, 0xff, 0x00]),
+      bytes: new Uint8Array([0xff, 0xd8, 0xff, 0x00]),
       mimeType: "image/jpeg",
+      config: CONFIG,
     });
 
     expect(result.reportType).toBe("TRUCK_PLUNDER");
@@ -121,7 +127,9 @@ describe("DeepSeek vision adapter", () => {
     expect(body.response_format).toEqual({ type: "json_object" });
     expect(body.thinking).toEqual({ type: "disabled" });
 
-    const userMessage = body.messages.find((message) => message.role === "user");
+    const userMessage = body.messages.find(
+      (message) => message.role === "user",
+    );
     const content = userMessage?.content as Array<Record<string, unknown>>;
     const imagePart = content.find((part) => part.type === "image_url") as {
       image_url: { url: string; detail: string };
@@ -133,20 +141,20 @@ describe("DeepSeek vision adapter", () => {
   it("rejects HEIC before making a provider request", async () => {
     await expect(
       analyzeReportImage({
-        buffer: Buffer.from("fake-heic"),
+        bytes: bytes("fake-heic"),
         mimeType: "image/heic",
+        config: CONFIG,
       }),
     ).rejects.toBeInstanceOf(DeepSeekAnalysisError);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("requires a DeepSeek key", async () => {
-    delete process.env.DEEPSEEK_API_KEY;
-
     await expect(
       analyzeReportImage({
-        buffer: Buffer.from("image"),
+        bytes: bytes("image"),
         mimeType: "image/png",
+        config: { ...CONFIG, apiKey: "" },
       }),
     ).rejects.toBeInstanceOf(DeepSeekConfigurationError);
     expect(fetchMock).not.toHaveBeenCalled();
@@ -157,8 +165,9 @@ describe("DeepSeek vision adapter", () => {
 
     await expect(
       analyzeReportImage({
-        buffer: Buffer.from("image"),
+        bytes: bytes("image"),
         mimeType: "image/png",
+        config: CONFIG,
       }),
     ).rejects.toBeInstanceOf(DeepSeekAnalysisError);
   });
@@ -173,8 +182,9 @@ describe("DeepSeek vision adapter", () => {
 
     await expect(
       analyzeReportImage({
-        buffer: Buffer.from("image"),
+        bytes: bytes("image"),
         mimeType: "image/webp",
+        config: CONFIG,
       }),
     ).rejects.toBeInstanceOf(DeepSeekAnalysisError);
   });

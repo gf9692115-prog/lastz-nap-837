@@ -5,7 +5,7 @@ import {
   normalizeBattleTimestamp,
   parsePlayerIdentity,
   UNSUPPORTED_REPORT_MESSAGE,
-} from "./violation-rules";
+} from "../supabase/functions/_shared/rules.ts";
 
 const FIXED_NOW = new Date("2026-11-20T15:00:00Z");
 

@@ -1,47 +1,40 @@
-import { randomUUID } from "node:crypto";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.119.2";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
-
+import { corsHeaders } from "../_shared/cors.ts";
 import {
+  DEEPSEEK_BASE_URL_DEFAULT,
+  DEEPSEEK_MODEL_DEFAULT,
   HOME_SERVER_ID,
   MAX_UPLOAD_BYTES,
+  REPORTS_BUCKET_DEFAULT,
   UNKNOWN_ALLIANCE,
-} from "@/lib/constants";
+} from "../_shared/constants.ts";
 import {
   analyzeReportImage,
   DeepSeekAnalysisError,
   DeepSeekConfigurationError,
-} from "@/lib/deepseek";
-import {
-  getReportsBucket,
-  getSupabaseAdmin,
-  getSupabaseConfigStatus,
-} from "@/lib/supabase/admin";
+} from "../_shared/deepseek.ts";
 import {
   detectSupportedImageMime,
   extensionForMime,
-} from "@/lib/server/image-file";
+} from "../_shared/image.ts";
+import { evaluateExtraction } from "../_shared/rules.ts";
 import type {
   UploadApiResponse,
   UploadOutcomeCode,
   UploadResponseRecord,
-} from "@/lib/types";
-import { evaluateExtraction } from "@/lib/violation-rules";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+} from "../_shared/types.ts";
 
 const NO_STORE_HEADERS = {
   "Cache-Control": "no-store, max-age=0",
-} as const;
+  ...corsHeaders,
+};
 
 function jsonResponse(
   body: UploadApiResponse,
   status: number,
-): NextResponse<UploadApiResponse> {
-  return NextResponse.json(body, {
+): Response {
+  return Response.json(body, {
     status,
     headers: NO_STORE_HEADERS,
   });
@@ -51,8 +44,32 @@ function failure(
   code: UploadOutcomeCode,
   message: string,
   status: number,
-): NextResponse<UploadApiResponse> {
+): Response {
   return jsonResponse({ ok: false, code, message }, status);
+}
+
+function friendlyAlliance(alliance: string): string {
+  return alliance === UNKNOWN_ALLIANCE ? "未知联盟" : alliance;
+}
+
+function getServiceRoleKey(): string {
+  const secretKeysJson = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (secretKeysJson) {
+    try {
+      const keys = JSON.parse(secretKeysJson) as Record<string, unknown>;
+      const preferred = keys.default;
+      if (typeof preferred === "string" && preferred) return preferred;
+      const first = Object.values(keys).find(
+        (value): value is string => typeof value === "string" && Boolean(value),
+      );
+      if (first) return first;
+    } catch {
+      console.error("[upload-report] SUPABASE_SECRET_KEYS is not valid JSON");
+    }
+  }
+
+  // Backward compatibility for projects still using legacy service_role keys.
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
 }
 
 async function removeEvidence(
@@ -63,33 +80,39 @@ async function removeEvidence(
   try {
     const { error } = await supabase.storage.from(bucket).remove([objectPath]);
     if (error) {
-      console.warn("[upload] failed to clean up evidence:", error.message);
+      console.warn("[upload-report] cleanup failed:", error.message);
     }
   } catch (error) {
     console.warn(
-      "[upload] failed to clean up evidence:",
+      "[upload-report] cleanup failed:",
       error instanceof Error ? error.message : "unknown error",
     );
   }
 }
 
-function friendlyAlliance(alliance: string): string {
-  return alliance === UNKNOWN_ALLIANCE ? "未知联盟" : alliance;
-}
+Deno.serve(async (request: Request): Promise<Response> => {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
 
-export async function POST(
-  request: Request,
-): Promise<NextResponse<UploadApiResponse>> {
-  const supabaseStatus = getSupabaseConfigStatus();
-  if (!supabaseStatus.configured || !process.env.DEEPSEEK_API_KEY?.trim()) {
+  if (request.method !== "POST") {
+    return failure("INVALID_IMAGE", "仅支持 POST 上传", 405);
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")?.trim();
+  const serviceRoleKey = getServiceRoleKey();
+  const deepseekApiKey = Deno.env.get("DEEPSEEK_API_KEY")?.trim();
+
+  if (!supabaseUrl || !serviceRoleKey || !deepseekApiKey) {
     console.error(
-      "[upload] missing server configuration:",
+      "[upload-report] missing configuration:",
       [
-        ...supabaseStatus.missing,
-        ...(process.env.DEEPSEEK_API_KEY?.trim()
-          ? []
-          : ["DEEPSEEK_API_KEY"]),
-      ].join(", "),
+        !supabaseUrl ? "SUPABASE_URL" : "",
+        !serviceRoleKey ? "service role key" : "",
+        !deepseekApiKey ? "DEEPSEEK_API_KEY" : "",
+      ]
+        .filter(Boolean)
+        .join(", "),
     );
     return failure(
       "CONFIGURATION_ERROR",
@@ -115,21 +138,18 @@ export async function POST(
   }
 
   if (image.size > MAX_UPLOAD_BYTES) {
-    return failure(
-      "INVALID_IMAGE",
-      "截图过大，请压缩后重试（最大 8MB）",
-      413,
-    );
+    return failure("INVALID_IMAGE", "截图过大，请压缩后重试（最大 8MB）", 413);
   }
 
-  let buffer: Buffer;
+  let arrayBuffer: ArrayBuffer;
   try {
-    buffer = Buffer.from(await image.arrayBuffer());
+    arrayBuffer = await image.arrayBuffer();
   } catch {
     return failure("INVALID_IMAGE", "无法读取图片，请重新选择", 400);
   }
 
-  const mimeType = detectSupportedImageMime(buffer);
+  const bytes = new Uint8Array(arrayBuffer);
+  const mimeType = detectSupportedImageMime(bytes);
   if (!mimeType) {
     return failure(
       "INVALID_IMAGE",
@@ -139,36 +159,41 @@ export async function POST(
   }
 
   let supabase: SupabaseClient;
-  let bucket: string;
   try {
-    supabase = getSupabaseAdmin();
-    bucket = getReportsBucket();
+    supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
+      },
+    });
   } catch (error) {
     console.error(
-      "[upload] failed to initialize Supabase:",
+      "[upload-report] failed to create Supabase client:",
       error instanceof Error ? error.message : "unknown error",
     );
     return failure("CONFIGURATION_ERROR", "数据服务尚未就绪，请稍后重试", 503);
   }
 
+  const bucket = Deno.env.get("SUPABASE_REPORTS_BUCKET")?.trim() ||
+    REPORTS_BUCKET_DEFAULT;
   const now = new Date();
   const objectPath = `${now.getUTCFullYear()}/${String(
     now.getUTCMonth() + 1,
-  ).padStart(2, "0")}/${randomUUID()}.${extensionForMime(mimeType)}`;
-
+  ).padStart(2, "0")}/${crypto.randomUUID()}.${extensionForMime(mimeType)}`;
   let uploadedPath: string | null = null;
 
   try {
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(objectPath, buffer, {
+      .upload(objectPath, new Blob([arrayBuffer], { type: mimeType }), {
         contentType: mimeType,
         cacheControl: "31536000",
         upsert: false,
       });
 
     if (uploadError) {
-      console.error("[upload] storage upload failed:", uploadError.message);
+      console.error("[upload-report] storage upload failed:", uploadError.message);
       return failure("STORAGE_ERROR", "截图上传失败，请稍后重试", 502);
     }
 
@@ -180,7 +205,18 @@ export async function POST(
 
     let extraction;
     try {
-      extraction = await analyzeReportImage({ buffer, mimeType });
+      extraction = await analyzeReportImage({
+        bytes,
+        mimeType,
+        config: {
+          apiKey: deepseekApiKey,
+          baseUrl:
+            Deno.env.get("DEEPSEEK_BASE_URL")?.trim() ||
+            DEEPSEEK_BASE_URL_DEFAULT,
+          model:
+            Deno.env.get("DEEPSEEK_MODEL")?.trim() || DEEPSEEK_MODEL_DEFAULT,
+        },
+      });
     } catch (error) {
       await removeEvidence(supabase, bucket, objectPath);
       uploadedPath = null;
@@ -203,14 +239,9 @@ export async function POST(
     }
 
     const evaluation = evaluateExtraction(extraction);
-
     if (!evaluation.ok) {
       await removeEvidence(supabase, bucket, objectPath);
       uploadedPath = null;
-
-      console.info(
-        `[upload] rejected ${evaluation.code.toLowerCase()} (${extraction.reportType})`,
-      );
       return failure(evaluation.code, evaluation.message, 422);
     }
 
@@ -244,21 +275,17 @@ export async function POST(
       uploadedPath = null;
 
       if (insertError.code === "23505") {
-        return failure(
-          "DUPLICATE",
-          "该战报已记录过，请勿重复提交",
-          409,
-        );
+        return failure("DUPLICATE", "该战报已记录过，请勿重复提交", 409);
       }
 
-      console.error("[upload] database insert failed:", insertError.message);
+      console.error("[upload-report] database insert failed:", insertError.message);
       return failure("DATABASE_ERROR", "战报保存失败，请稍后重试", 500);
     }
 
     uploadedPath = null;
 
     console.info(
-      `[upload] recorded type=${decision.reportType} server=#${decision.offendingServer} violation=${decision.isViolation} alliance=${decision.offendingAlliance}`,
+      `[upload-report] recorded type=${decision.reportType} server=#${decision.offendingServer} violation=${decision.isViolation} alliance=${decision.offendingAlliance}`,
     );
 
     if (decision.isViolation) {
@@ -290,7 +317,7 @@ export async function POST(
     }
 
     console.error(
-      "[upload] unexpected error:",
+      "[upload-report] unexpected error:",
       error instanceof Error ? error.message : "unknown error",
     );
 
@@ -304,4 +331,4 @@ export async function POST(
 
     return failure("INTERNAL_ERROR", "服务暂时不可用，请稍后重试", 500);
   }
-}
+});

@@ -1,7 +1,11 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
   Crosshair,
+  LoaderCircle,
   Radio,
   ShieldCheck,
   Sparkles,
@@ -9,6 +13,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
+import { getDashboardData } from "@/lib/client/dashboard-data";
 import { SITE } from "@/lib/constants";
 import {
   allianceBadge,
@@ -22,7 +27,7 @@ import { ReportFeed } from "./report-feed";
 import { SiteHeader } from "./site-header";
 import { UploadSection } from "./upload-section";
 
-interface DashboardProps {
+interface HeroProps {
   data: DashboardData;
 }
 
@@ -52,7 +57,7 @@ function BackgroundEffects() {
   );
 }
 
-function Hero({ data }: DashboardProps) {
+function Hero({ data }: HeroProps) {
   const latest = data.latestViolations[0];
   const unavailable = data.dataUnavailable;
 
@@ -308,7 +313,56 @@ function Footer() {
   );
 }
 
-export function Dashboard({ data }: DashboardProps) {
+function LoadingDashboard() {
+  return (
+    <div
+      id="top"
+      className="relative min-h-screen overflow-x-clip bg-void-950 text-zinc-200"
+    >
+      <BackgroundEffects />
+      <div className="relative z-10">
+        <SiteHeader />
+        <main
+          id="main"
+          className="mx-auto flex min-h-[calc(100vh-68px)] w-full max-w-[1180px] items-center justify-center px-4 sm:px-6 lg:px-8"
+        >
+          <div className="flex flex-col items-center text-center" role="status">
+            <span className="relative flex h-16 w-16 items-center justify-center rounded-full border border-acid/25 bg-acid/[0.04]">
+              <span
+                aria-hidden="true"
+                className="absolute inset-1 animate-spin rounded-full border border-transparent border-t-acid/70"
+              />
+              <LoaderCircle className="h-5 w-5 animate-spin text-acid" />
+            </span>
+            <p className="mt-6 font-mono text-[9px] uppercase tracking-[0.22em] text-acid">
+              Syncing public ledger
+            </p>
+            <p className="mt-2 text-[12px] text-zinc-500">
+              正在读取 837 服公开榜单与证据流…
+            </p>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export function Dashboard() {
+  const [data, setData] = useState<DashboardData | null>(null);
+
+  const loadData = useCallback(async () => {
+    const nextData = await getDashboardData();
+    setData(nextData);
+  }, []);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
+
+  if (!data) {
+    return <LoadingDashboard />;
+  }
+
   return (
     <div
       id="top"
@@ -323,7 +377,7 @@ export function Dashboard({ data }: DashboardProps) {
         >
           <Hero data={data} />
           <AvailabilityNotice unavailable={data.dataUnavailable} />
-          <UploadSection />
+          <UploadSection onUploaded={loadData} />
           <Leaderboard
             entries={data.leaderboard}
             stats={data.stats}

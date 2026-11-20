@@ -3,12 +3,12 @@ import {
   MIN_EXTRACTION_CONFIDENCE,
   REPORT_TYPES,
   UNKNOWN_ALLIANCE,
-} from "./constants";
+} from "./constants.ts";
 import type {
   NormalizedPlayer,
   ReportType,
   RuleEvaluation,
-} from "./types";
+} from "./types.ts";
 
 export const UNSUPPORTED_REPORT_MESSAGE =
   "请上传赏金记录、矿区争夺或贸易货车战报";

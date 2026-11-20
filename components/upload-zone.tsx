@@ -7,7 +7,6 @@ import {
   useState,
   type DragEvent,
 } from "react";
-import { useRouter } from "next/navigation";
 import {
   Crosshair,
   ImageUp,
@@ -16,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import { getPublicSupabaseConfig } from "@/lib/client/config";
 import { prepareImageForUpload } from "@/lib/client/prepare-image";
 import type { UploadApiResponse } from "@/lib/types";
 
@@ -49,8 +49,11 @@ function localError(message: string): UploadApiResponse {
   };
 }
 
-export function UploadZone() {
-  const router = useRouter();
+interface UploadZoneProps {
+  onUploaded?: () => void | Promise<void>;
+}
+
+export function UploadZone({ onUploaded }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -125,6 +128,17 @@ export function UploadZone() {
   const processFile = useCallback(
     async (file: File) => {
       if (busyRef.current) return;
+
+      const { key, uploadUrl } = getPublicSupabaseConfig();
+      if (!key || !uploadUrl) {
+        setResult(
+          localError(
+            "上传服务尚未配置，请先在 .env.local 中填写 Supabase URL 和公开 Key",
+          ),
+        );
+        return;
+      }
+
       busyRef.current = true;
       setResult(null);
       setStage("compressing");
@@ -149,7 +163,7 @@ export function UploadZone() {
           controller.abort();
         }, 70_000);
 
-        const response = await fetch("/api/upload", {
+        const response = await fetch(uploadUrl, {
           method: "POST",
           body: (() => {
             const body = new FormData();
@@ -159,6 +173,7 @@ export function UploadZone() {
           signal: controller.signal,
           headers: {
             Accept: "application/json",
+            apikey: key,
           },
         });
 
@@ -184,7 +199,16 @@ export function UploadZone() {
 
         setResult(payload);
         if (payload.ok) {
-          router.refresh();
+          try {
+            await onUploaded?.();
+          } catch (refreshError) {
+            console.error(
+              "[upload] failed to refresh public dashboard:",
+              refreshError instanceof Error
+                ? refreshError.message
+                : "unknown error",
+            );
+          }
         }
       } catch (error) {
         clearTimers();
@@ -213,7 +237,7 @@ export function UploadZone() {
         clearTimers();
       }
     },
-    [clearPreview, clearTimers, replacePreview, router],
+    [clearPreview, clearTimers, onUploaded, replacePreview],
   );
 
   function handleInputChange(

@@ -1,0 +1,4 @@
+# Supabase CLI project config (optional locally; used for function deploy).
+# The function is intentionally public, matching the open-upload product scope.
+[functions.upload-report]
+verify_jwt = false
