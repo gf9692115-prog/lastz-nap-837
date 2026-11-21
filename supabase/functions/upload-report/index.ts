@@ -285,7 +285,27 @@ Deno.serve(async (request: Request): Promise<Response> => {
       }
 
       console.error("[upload-report] database insert failed:", insertError.message);
-      return failure("DATABASE_ERROR", "战报保存失败，请稍后重试", 500);
+      const includeDebug =
+        new URL(request.url).searchParams.get("debug") === "1";
+
+      return Response.json(
+        {
+          ok: false,
+          code: "DATABASE_ERROR",
+          message: "战报保存失败，请稍后重试",
+          ...(includeDebug
+            ? {
+                debug: {
+                  code: insertError.code,
+                  message: insertError.message,
+                  details: insertError.details,
+                  hint: insertError.hint,
+                },
+              }
+            : {}),
+        },
+        { status: 500, headers: NO_STORE_HEADERS },
+      );
     }
 
     uploadedPath = null;
