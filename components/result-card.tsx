@@ -43,7 +43,7 @@ interface ResultPresentation {
 
 const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
   VIOLATION_RECORDED: {
-    title: "违规成立 · 已计入榜单",
+    title: "Violation confirmed · Scored",
     icon: ShieldCheck,
     wrapper: "border-acid/30 bg-acid/[0.065]",
     iconWrap: "bg-acid text-void-950",
@@ -51,7 +51,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-acid",
   },
   EXTERNAL_SERVER: {
-    title: "跨服行为 · 不计入 NAP",
+    title: "Cross-server action · Not scored",
     icon: Globe2,
     wrapper: "border-signal-cyan/25 bg-signal-cyan/[0.055]",
     iconWrap: "bg-signal-cyan/15 text-signal-cyan",
@@ -59,7 +59,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-signal-cyan",
   },
   DUPLICATE: {
-    title: "重复战报 · 未重复计分",
+    title: "Duplicate report · Not counted again",
     icon: CopyX,
     wrapper: "border-signal-amber/30 bg-signal-amber/[0.06]",
     iconWrap: "bg-signal-amber/15 text-signal-amber",
@@ -67,7 +67,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-signal-amber",
   },
   UNSUPPORTED_REPORT: {
-    title: "不在检测范围",
+    title: "Outside the detection scope",
     icon: FileQuestion,
     wrapper: "border-white/[0.12] bg-white/[0.035]",
     iconWrap: "bg-white/10 text-zinc-200",
@@ -75,7 +75,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-white",
   },
   INVALID_REPORT: {
-    title: "识别信息不完整",
+    title: "Incomplete extraction",
     icon: ScanSearch,
     wrapper: "border-signal-amber/30 bg-signal-amber/[0.06]",
     iconWrap: "bg-signal-amber/15 text-signal-amber",
@@ -83,7 +83,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-signal-amber",
   },
   INVALID_IMAGE: {
-    title: "图片无法使用",
+    title: "Image not usable",
     icon: ImageOff,
     wrapper: "border-signal-red/30 bg-signal-red/[0.055]",
     iconWrap: "bg-signal-red/15 text-signal-red",
@@ -91,7 +91,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-signal-red",
   },
   AI_ERROR: {
-    title: "AI 识别暂时失败",
+    title: "AI analysis failed",
     icon: Sparkles,
     wrapper: "border-signal-red/30 bg-signal-red/[0.055]",
     iconWrap: "bg-signal-red/15 text-signal-red",
@@ -99,7 +99,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-signal-red",
   },
   CONFIGURATION_ERROR: {
-    title: "服务尚未就绪",
+    title: "Service not ready",
     icon: Wrench,
     wrapper: "border-signal-red/30 bg-signal-red/[0.055]",
     iconWrap: "bg-signal-red/15 text-signal-red",
@@ -107,7 +107,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-signal-red",
   },
   STORAGE_ERROR: {
-    title: "证据上传失败",
+    title: "Evidence upload failed",
     icon: ServerCrash,
     wrapper: "border-signal-red/30 bg-signal-red/[0.055]",
     iconWrap: "bg-signal-red/15 text-signal-red",
@@ -115,7 +115,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-signal-red",
   },
   DATABASE_ERROR: {
-    title: "记录写入失败",
+    title: "Record save failed",
     icon: ServerCrash,
     wrapper: "border-signal-red/30 bg-signal-red/[0.055]",
     iconWrap: "bg-signal-red/15 text-signal-red",
@@ -123,7 +123,7 @@ const PRESENTATIONS: Record<UploadOutcomeCode, ResultPresentation> = {
     strong: "text-signal-red",
   },
   INTERNAL_ERROR: {
-    title: "处理服务异常",
+    title: "Processing error",
     icon: ShieldAlert,
     wrapper: "border-signal-red/30 bg-signal-red/[0.055]",
     iconWrap: "bg-signal-red/15 text-signal-red",
@@ -214,7 +214,7 @@ export function ResultCard({ result, onDismiss }: ResultCardProps) {
               <button
                 type="button"
                 onClick={onDismiss}
-                aria-label="关闭判定结果"
+                aria-label="Dismiss verdict"
                 className="-mr-1 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-zinc-500 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
               >
                 <X className="h-4 w-4" />
@@ -230,18 +230,21 @@ export function ResultCard({ result, onDismiss }: ResultCardProps) {
 
           {record ? (
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-white/[0.08] pt-3.5 sm:grid-cols-4">
-              <Detail label="战报类型">
+              <Detail label="Report type">
                 {reportTypeLabel(record.reportType)}
               </Detail>
               <Detail
-                label={record.isViolation ? "违规联盟" : "对手联盟"}
+                label={record.isViolation ? "Offending alliance" : "Opponent alliance"}
               >
                 {allianceBadge(record.offendingAlliance)}
               </Detail>
-              <Detail label={record.isViolation ? "违规玩家" : "对手"} accent={record.isViolation}>
+              <Detail
+                label={record.isViolation ? "Offender" : "Opponent"}
+                accent={record.isViolation}
+              >
                 {recordPlayer}
               </Detail>
-              <Detail label="战报时间">
+              <Detail label="Battle time">
                 {formatBattleTimestamp(record.battleTimestamp)}
               </Detail>
             </dl>
@@ -251,7 +254,7 @@ export function ResultCard({ result, onDismiss }: ResultCardProps) {
             <div className="mt-3.5 flex items-center gap-2 border-t border-white/[0.06] pt-3">
               <BadgeCheck className="h-3.5 w-3.5 text-acid" />
               <p className="text-[11px] leading-relaxed text-zinc-400">
-                该记录已同步到下方公开战报流，证据截图已归档。
+                This record is now in the public evidence feed and its screenshot is archived.
               </p>
             </div>
           ) : null}
@@ -260,7 +263,7 @@ export function ResultCard({ result, onDismiss }: ResultCardProps) {
             <div className="mt-3.5 flex items-center gap-2 border-t border-white/[0.06] pt-3">
               <Globe2 className="h-3.5 w-3.5 text-signal-cyan" />
               <p className="text-[11px] leading-relaxed text-zinc-400">
-                外服 #{record.offendingServer} 记录仅留档审计，不进入本服排行榜。
+                External Server #{record.offendingServer} activity is kept for audit only and does not enter this server&apos;s leaderboard.
               </p>
             </div>
           ) : null}
@@ -268,7 +271,7 @@ export function ResultCard({ result, onDismiss }: ResultCardProps) {
           {result.code === "AI_ERROR" || result.code === "INTERNAL_ERROR" ? (
             <div className="mt-3 flex items-center gap-2 text-[11px] text-zinc-500">
               <Loader className="h-3 w-3 animate-spin" />
-              若持续失败，请联系榜单管理员检查 API 状态。
+              If this keeps failing, contact the site admin to check the analysis API status.
             </div>
           ) : null}
         </div>

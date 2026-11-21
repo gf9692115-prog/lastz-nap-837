@@ -9,7 +9,7 @@ export function SiteHeader() {
         <a
           href="#top"
           className="group flex min-w-0 items-center gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/80"
-          aria-label="NAP Watch 首页"
+          aria-label="NAP Watch home"
         >
           <span className="relative text-acid">
             <LogoMark className="h-9 w-9 transition-transform duration-500 group-hover:rotate-45" />
@@ -26,20 +26,20 @@ export function SiteHeader() {
         </a>
 
         <nav
-          aria-label="页面导航"
+          aria-label="Primary navigation"
           className="hidden items-center gap-7 md:flex"
         >
           <a
             href="#leaderboard"
             className="text-[12px] font-medium tracking-wide text-zinc-400 transition-colors hover:text-white"
           >
-            违规榜
+            Leaderboard
           </a>
           <a
             href="#evidence"
             className="text-[12px] font-medium tracking-wide text-zinc-400 transition-colors hover:text-white"
           >
-            战报公示
+            Evidence
           </a>
           <span className="h-4 w-px bg-white/10" aria-hidden="true" />
           <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">
@@ -59,7 +59,7 @@ export function SiteHeader() {
             href="#upload"
             className="group inline-flex h-9 items-center gap-2 rounded-sm bg-acid px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.1em] text-void-950 transition-colors hover:bg-acid-300 sm:px-4"
           >
-            上传战报
+            Upload Report
             <ArrowUpRight
               aria-hidden="true"
               className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"

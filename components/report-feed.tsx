@@ -139,9 +139,9 @@ function ReportCard({
           <div className="mt-3 flex items-start gap-2 text-[10px] leading-relaxed text-zinc-500">
             <Swords className="mt-0.5 h-3 w-3 shrink-0" />
             <span className="line-clamp-2">
-              受害方：
+              Victim:{" "}
               <span className="text-zinc-400">
-                {victimName || "赏金记录未展示"}
+                {victimName || "Not shown on this report"}
               </span>
             </span>
           </div>
@@ -172,10 +172,10 @@ function ReportCard({
 
       <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/[0.07] px-4 py-3 sm:px-5">
         <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-zinc-600">
-          View original evidence
+          Public evidence
         </span>
         <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-zinc-500 transition-colors group-hover:text-acid">
-          查看证据
+          View evidence
           <Maximize2 className="h-3 w-3" />
         </span>
       </div>
@@ -192,12 +192,12 @@ export function ReportFeed({ reports, unavailable }: ReportFeedProps) {
       <SectionHeading
         index="03"
         eyebrow="Evidence feed"
-        title="最新违规战报公示"
-        description="所有记录附原始截图凭证，点击任意卡片即可查看战报原图与判定说明。"
+        title="Latest confirmed reports"
+        description="Every record includes its original screenshot. Open any card to inspect the evidence and the assessment."
         action={
           <div className="inline-flex items-center gap-2 rounded-sm border border-white/10 bg-white/[0.025] px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-zinc-500">
             <Newspaper className="h-3.5 w-3.5 text-acid/80" />
-            时间统一标示为 UTC
+            All times shown in UTC
           </div>
         }
       />
@@ -212,12 +212,12 @@ export function ReportFeed({ reports, unavailable }: ReportFeedProps) {
             )}
           </span>
           <h3 className="mt-4 font-display text-lg font-semibold text-white">
-            {unavailable ? "证据流暂时离线" : "暂无公示战报"}
+            {unavailable ? "Evidence feed temporarily offline" : "No public reports yet"}
           </h3>
           <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-zinc-500">
             {unavailable
-              ? "战报存档服务暂时无法读取，请稍后刷新页面。"
-              : "新的违规记录通过 AI 识别与规则复核后，会自动出现在这里。"}
+              ? "The report archive cannot be read right now. Refresh in a moment."
+              : "New confirmed records appear here automatically after AI extraction and rule verification."}
           </p>
         </div>
       ) : (

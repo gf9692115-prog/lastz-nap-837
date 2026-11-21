@@ -70,7 +70,7 @@ async function decodeImage(file: File): Promise<DecodedImage> {
   } catch {
     URL.revokeObjectURL(objectUrl);
     throw new Error(
-      "无法读取这张图片；HEIC 请先在系统相册中转存为 JPG 后再上传",
+      "Could not read this image. For HEIC files, export the photo as JPG in your gallery first.",
     );
   }
 }
@@ -83,7 +83,7 @@ function canvasToJpeg(
     canvas.toBlob(
       (blob) => {
         if (blob) resolve(blob);
-        else reject(new Error("图片压缩失败，请尝试另一张截图"));
+        else reject(new Error("Image compression failed. Try another screenshot."));
       },
       "image/jpeg",
       quality,
@@ -98,20 +98,20 @@ function canvasToJpeg(
  */
 export async function prepareImageForUpload(file: File): Promise<File> {
   if (!file || file.size === 0) {
-    throw new Error("请选择一张有效的战报截图");
+    throw new Error("Choose a valid report screenshot.");
   }
 
   if (file.size > MAX_CLIENT_RAW_BYTES) {
-    throw new Error("原图超过 15MB，请先裁剪或压缩后再上传");
+    throw new Error("The original image is over 15MB. Crop or compress it before uploading.");
   }
 
   const mime = resolveFileMime(file);
   if (!mime) {
-    throw new Error("仅支持 JPG、PNG、WebP 格式的战报截图");
+    throw new Error("Only JPG, PNG, and WebP report screenshots are supported.");
   }
 
-  // DeepSeek vision does not accept HEIC/HEIF, so phone photos of these types
-  // must always be transcoded, even when they are small.
+  // The vision service does not accept HEIC/HEIF, so phone photos of these
+  // types must always be transcoded, even when they are small.
   const needsConversion = mime === "image/heic" || mime === "image/heif";
 
   if (!needsConversion && file.size <= COMPRESSION_THRESHOLD_BYTES) {
@@ -127,7 +127,7 @@ export async function prepareImageForUpload(file: File): Promise<File> {
 
     const context = canvas.getContext("2d", { alpha: false });
     if (!context) {
-      throw new Error("当前浏览器无法压缩图片，请换一个浏览器重试");
+      throw new Error("This browser cannot compress images. Try a different browser.");
     }
 
     context.fillStyle = "#000000";
@@ -167,7 +167,7 @@ export async function prepareImageForUpload(file: File): Promise<File> {
     }
 
     if (blob.size > 4 * 1024 * 1024) {
-      throw new Error("截图压缩后仍然过大，请裁剪战报区域后再上传");
+      throw new Error("The screenshot is still too large after compression. Crop the report area and try again.");
     }
 
     // If compression made the file larger, retain the original when safe.

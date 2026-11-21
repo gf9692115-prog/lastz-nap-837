@@ -76,17 +76,17 @@ function Hero({ data }: HeroProps) {
           </div>
 
           <h1 className="mt-6 max-w-[760px] font-display text-[clamp(2.75rem,8.5vw,5.6rem)] font-black leading-[0.9] tracking-[-0.05em] text-white">
-            NAP<span className="mx-1 text-acid sm:mx-2">//</span>
-            <br className="sm:hidden" />
-            违规雷达
+            NAP<span className="mx-1 text-acid sm:mx-2">//</span>RADAR
           </h1>
 
           <p className="mt-5 max-w-xl text-[14px] leading-7 text-zinc-400 sm:text-[15px]">
-            上传真实战报截图，AI 负责读取，规则引擎负责定性。
+            Upload a real report. AI reads the screenshot and a server-side ruleset
+            makes the final call.{" "}
             <span className="text-zinc-200">
-              只锁定 Server {SITE.server} 本服玩家
+              Only Server {SITE.server} players are scored
             </span>
-            ，外服跨服行为不计分。攻守方永远不会算反。
+            ; cross-server actions are exempt, and attacker/victim sides are never
+            reversed.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-2.5">
@@ -94,24 +94,24 @@ function Hero({ data }: HeroProps) {
               href="#upload"
               className="group inline-flex h-11 items-center gap-2 rounded-sm bg-acid px-5 font-display text-[12px] font-bold uppercase tracking-[0.1em] text-void-950 transition-colors hover:bg-acid-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid focus-visible:ring-offset-4 focus-visible:ring-offset-void-950"
             >
-              开始检测
+              Start scan
               <ArrowDownRight className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
             </a>
             <a
               href="#leaderboard"
               className="inline-flex h-11 items-center gap-2 rounded-sm border border-white/[0.12] bg-white/[0.025] px-5 font-display text-[12px] font-semibold uppercase tracking-[0.08em] text-zinc-300 transition-colors hover:border-white/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
-              查看违规榜
+              View leaderboard
               <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
           </div>
 
           <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2.5">
             {[
-              "多语言战报识别",
-              "右侧 / 日志攻击者取证",
-              "外服行为豁免",
-              "分钟级去重防刷",
+              "Multilingual report OCR",
+              "Right-side / log attacker",
+              "Cross-server exempt",
+              "Minute-level dedupe",
             ].map((feature) => (
               <span
                 key={feature}
@@ -164,7 +164,7 @@ function Hero({ data }: HeroProps) {
             <div className="relative mt-8 grid grid-cols-2 gap-5">
               <div>
                 <div className="text-[10px] tracking-wide text-zinc-500">
-                  累计违规
+                  Total violations
                 </div>
                 <div className="mt-2 font-display text-[46px] font-black leading-none tracking-[-0.055em] text-white sm:text-[54px]">
                   {formatCount(data.stats.violationCount, unavailable)}
@@ -175,7 +175,7 @@ function Hero({ data }: HeroProps) {
               </div>
               <div>
                 <div className="text-[10px] tracking-wide text-zinc-500">
-                  上榜联盟
+                  Ranked alliances
                 </div>
                 <div className="mt-2 font-display text-[46px] font-black leading-none tracking-[-0.055em] text-white sm:text-[54px]">
                   {formatCount(data.stats.allianceCount, unavailable)}
@@ -260,10 +260,11 @@ function AvailabilityNotice({ unavailable }: { unavailable: boolean }) {
       <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-signal-amber" />
       <div>
         <p className="text-[12px] font-medium text-signal-amber">
-          榜单数据通道暂未连通
+          Leaderboard feed unavailable
         </p>
         <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">
-          榜单服务正在同步。数据恢复后，排行榜与证据流会自动上线，无需刷新配置。
+          The public ledger is syncing. Rankings and evidence will appear
+          automatically when the data channel is restored.
         </p>
       </div>
     </div>
@@ -285,9 +286,11 @@ function Footer() {
               </span>
             </div>
             <p className="mt-3 max-w-xl text-[10px] leading-relaxed text-zinc-600">
-              Last Z: Survival Shooter · Server {SITE.server} NAP 违规自动检测。
-              仅统计本服玩家已确认违规；外服跨服掠夺属于合法游戏机制，不计入本服 NAP。
-              战报证据由上传者提供并公开公示，如对判定有异议请联系联盟管理复核。
+              Last Z: Survival Shooter · Server {SITE.server} NAP enforcement.
+              Only confirmed violations by Server 837 players are scored.
+              Cross-server raids are legal game mechanics and are not counted.
+              Evidence is supplied by uploaders and displayed publicly; contact
+              alliance leadership for appeals.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-4">
@@ -296,7 +299,7 @@ function Footer() {
                 Detection stack
               </div>
               <div className="mt-1 text-[10px] text-zinc-500">
-                DeepSeek Vision + Rule Engine
+                AI Vision + Rule Engine
               </div>
             </div>
             <span className="flex h-9 w-9 items-center justify-center rounded-sm border border-acid/20 bg-acid/[0.04]">
@@ -338,7 +341,7 @@ function LoadingDashboard() {
               Syncing public ledger
             </p>
             <p className="mt-2 text-[12px] text-zinc-500">
-              正在读取 837 服公开榜单与证据流…
+              Reading the public Server 837 leaderboard and evidence feed…
             </p>
           </div>
         </main>

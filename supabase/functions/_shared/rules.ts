@@ -11,13 +11,13 @@ import type {
 } from "./types.ts";
 
 export const UNSUPPORTED_REPORT_MESSAGE =
-  "请上传赏金记录、矿区争夺或贸易货车战报";
+  "Upload a bounty record, a resource-tile report, or a trade-truck report.";
 
 export const INVALID_REPORT_MESSAGE =
-  "未能识别完整的违规方或战斗时间，请上传清晰、包含双方信息与时间的完整战报截图";
+  "Could not extract a complete offender or battle time. Upload a clear, full screenshot showing both sides and the timestamp.";
 
 export const LOW_CONFIDENCE_MESSAGE =
-  "识别把握不足，请上传更清晰、无遮挡的完整战报截图后重试";
+  "Confidence was too low. Upload a sharper, unobstructed report screenshot and try again.";
 
 const SERVER_PREFIX_RE = /^\s*#\s*(\d{2,5})(?=\D|$)/u;
 const BRACKET_RE = /\[([^\[\]]+)\]/u;
@@ -276,35 +276,35 @@ function buildReason(
   if (isViolation) {
     const context =
       reportType === "BOUNTY_PLUNDER"
-        ? "赏金任务记录中的掠夺者"
+        ? "The plunderer on this bounty record"
         : reportType === "RESOURCE_TILE"
-          ? "矿区争夺战报右侧进攻方"
-          : "贸易货车战报中的劫车方";
+          ? "The right-side attacker on this resource-tile report"
+          : "The attacker on this trade-truck report";
 
     const rule =
       reportType === "RESOURCE_TILE"
-        ? "违反 837 服全服禁止抢矿规则"
+        ? "no-mine-raiding rule"
         : reportType === "TRUCK_PLUNDER"
-          ? "违反 837 服 NAP 货车保护规则"
-          : "违反 837 服 NAP 赏金保护规则";
+          ? "NAP trade-truck rule"
+          : "NAP bounty rule";
 
     const allianceText =
       alliance === UNKNOWN_ALLIANCE
-        ? "未识别到该玩家联盟，暂记入 UNKNOWN"
-        : `计入 [${alliance}]`;
+        ? "No alliance tag was identified, so this hit is filed under UNKNOWN."
+        : `This hit counts toward [${alliance}].`;
 
-    return `${context}来自 ${serverLabel} 本服，${rule}，${allianceText}。`;
+    return `${context} is from home Server ${serverLabel}; this violates the Server 837 ${rule}. ${allianceText}`;
   }
 
   if (reportType === "BOUNTY_PLUNDER") {
-    return `赏金任务记录中的掠夺者来自 ${serverLabel} 外服，属于跨服玩法，不计入 837 服 NAP 违规。`;
+    return `The plunderer on this bounty record is from external Server ${serverLabel}. Cross-server activity is legal and is not counted against the Server 837 NAP.`;
   }
 
   if (reportType === "RESOURCE_TILE") {
-    return `矿区争夺战报右侧进攻方来自 ${serverLabel} 外服，不计入 837 服 NAP 违规。`;
+    return `The right-side attacker on this resource-tile report is from external Server ${serverLabel}. It is not counted against the Server 837 NAP.`;
   }
 
-  return `贸易货车战报中的劫车方来自 ${serverLabel} 外服，属于正常跨服掠夺，不计入 837 服 NAP 违规。`;
+  return `The attacker on this trade-truck report is from external Server ${serverLabel}. Cross-server raids are legal and are not counted against the Server 837 NAP.`;
 }
 
 /**

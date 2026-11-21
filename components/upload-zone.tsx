@@ -28,16 +28,16 @@ const STAGE_COPY: Record<
   { title: string; detail: string }
 > = {
   compressing: {
-    title: "正在优化截图",
-    detail: "保留文字清晰度，压缩大图体积…",
+    title: "Optimizing screenshot",
+    detail: "Preserving text clarity while reducing image size…",
   },
   uploading: {
-    title: "正在上传证据",
-    detail: "截图加密传输至云端存档…",
+    title: "Uploading evidence",
+    detail: "Transferring the screenshot securely to cloud storage…",
   },
   analyzing: {
-    title: "DeepSeek 正在阅卷",
-    detail: "识别战报类型、攻守方、联盟与时间…",
+    title: "AI is analyzing the report",
+    detail: "Reading the report type, sides, alliance, and timestamp…",
   },
 };
 
@@ -133,7 +133,7 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
       if (!key || !uploadUrl) {
         setResult(
           localError(
-            "上传服务尚未配置，请先在 .env.local 中填写 Supabase URL 和公开 Key",
+            "The upload service is not configured. Add the public Supabase URL and key to the build environment.",
           ),
         );
         return;
@@ -190,8 +190,8 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
           setResult(
             localError(
               response.status === 413
-                ? "截图体积超过服务器限制，请裁剪战报区域后重试"
-                : `上传失败（HTTP ${response.status}），请稍后重试`,
+                ? "The screenshot exceeds the server limit. Crop the report area and try again."
+                : `Upload failed (HTTP ${response.status}). Please try again.`,
             ),
           );
           return;
@@ -215,15 +215,19 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
         if (unmountedRef.current) return;
 
         if (timedOut) {
-          setResult(localError("识别超时，请稍后重试或换一张更小的截图"));
+          setResult(
+            localError(
+              "Analysis timed out. Try again with a smaller screenshot.",
+            ),
+          );
         } else if (error instanceof DOMException && error.name === "AbortError") {
-          setResult(localError("上传已取消，请重新选择截图"));
+          setResult(localError("Upload canceled. Please choose the screenshot again."));
         } else {
           setResult(
             localError(
               error instanceof Error
                 ? error.message
-                : "上传失败，请检查网络后重试",
+                : "Upload failed. Check your connection and try again.",
             ),
           );
         }
@@ -304,7 +308,7 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
         aria-label={
           busy
             ? STAGE_COPY[stage as Exclude<UploadStage, "idle">].title
-            : "点击选择或拖入战报截图"
+            : "Click to choose or drop a report screenshot"
         }
         className={`group relative flex min-h-[318px] w-full flex-col items-center justify-center overflow-hidden rounded-sm border border-dashed px-5 py-9 text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/80 focus-visible:ring-offset-4 focus-visible:ring-offset-void-900 sm:min-h-[344px] ${
           isDragging
@@ -379,21 +383,21 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
             {busy && stageCopy
               ? stageCopy.title
               : isDragging
-                ? "松手，开始判定"
-                : "上传战报截图"}
+                ? "Drop to start the scan"
+                : "Upload a report screenshot"}
           </span>
           <span className="mt-2 max-w-[320px] text-[12px] leading-relaxed text-zinc-400 sm:text-[13px]">
             {busy && stageCopy
               ? stageCopy.detail
               : isDragging
-                ? "支持 JPG / PNG / WebP，HEIC 自动转 JPG"
-                : "拖拽到这里，或点击从相册 / 文件选择"}
+                ? "JPG, PNG, and WebP supported. HEIC is converted automatically."
+                : "Drag it here, or choose from your gallery or files."}
           </span>
 
           {!busy && !isDragging ? (
             <span className="mt-5 inline-flex items-center gap-2 rounded-sm bg-acid px-4 py-2.5 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-void-950 transition-colors group-hover:bg-acid-300">
               <ScanLine className="h-4 w-4" />
-              选择截图
+              Choose screenshot
             </span>
           ) : (
             <span className="mt-5 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-acid/80">
@@ -403,7 +407,7 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
           )}
 
           <span className="mt-4 font-mono text-[9px] uppercase tracking-[0.13em] text-zinc-600">
-            HEIC 自动转 JPG · 自动压缩大图 · 单张原图 ≤ 15MB
+            HEIC to JPG · Auto-compress · Original ≤ 15MB
           </span>
         </span>
       </button>
@@ -411,7 +415,7 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
       <div className="mt-3 flex items-start gap-2 px-0.5">
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" />
         <p className="text-[10px] leading-relaxed text-zinc-500">
-          请上传包含完整攻守双方与时间的原图。确认为违规后，截图会作为公开证据展示。
+          Upload the full original image with both sides and the timestamp visible. Confirmed violations become public evidence.
         </p>
       </div>
 

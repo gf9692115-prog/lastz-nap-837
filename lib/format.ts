@@ -2,11 +2,11 @@ import { REPORT_TYPE_LABELS, UNKNOWN_ALLIANCE } from "./constants";
 import type { ReportType } from "./types";
 
 export function allianceDisplayName(alliance: string): string {
-  return alliance === UNKNOWN_ALLIANCE ? "未知联盟" : alliance;
+  return alliance === UNKNOWN_ALLIANCE ? "Unknown" : alliance;
 }
 
 export function allianceBadge(alliance: string): string {
-  return alliance === UNKNOWN_ALLIANCE ? "未知联盟" : `[${alliance}]`;
+  return alliance === UNKNOWN_ALLIANCE ? "Unknown" : `[${alliance}]`;
 }
 
 export function playerNameWithoutAlliance(
@@ -21,7 +21,20 @@ export function playerNameWithoutAlliance(
 }
 
 export function reportTypeLabel(reportType: ReportType): string {
-  return REPORT_TYPE_LABELS[reportType]?.label ?? "未知战报";
+  return REPORT_TYPE_LABELS[reportType]?.label ?? "Unknown report";
+}
+
+export function evidenceAssessment(reportType: ReportType): string {
+  switch (reportType) {
+    case "BOUNTY_PLUNDER":
+      return "The plunderer shown on this bounty record belongs to Server 837. Bounty plundering is prohibited under the Server 837 NAP and is counted on the alliance leaderboard.";
+    case "RESOURCE_TILE":
+      return "The right-side attacker on this resource-tile report belongs to Server 837. Resource-tile attacks are prohibited under the Server 837 NAP and are counted on the alliance leaderboard.";
+    case "TRUCK_PLUNDER":
+      return "The trade-truck attacker on this report belongs to Server 837. Same-server trade-truck raids are prohibited under the Server 837 NAP and are counted on the alliance leaderboard.";
+    default:
+      return "This report was confirmed under the Server 837 NAP.";
+  }
 }
 
 interface UtcDateParts {
@@ -47,13 +60,13 @@ function getUtcParts(iso: string): UtcDateParts | null {
 
 export function formatBattleTimestamp(iso: string): string {
   const parts = getUtcParts(iso);
-  if (!parts) return "时间未知";
+  if (!parts) return "Unknown time";
   return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
 }
 
 export function formatShortBattleTimestamp(iso: string): string {
   const parts = getUtcParts(iso);
-  if (!parts) return "时间未知";
+  if (!parts) return "Unknown time";
   return `${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
 }
 

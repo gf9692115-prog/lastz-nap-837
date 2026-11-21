@@ -88,7 +88,7 @@ describe("Server 837 NAP rule engine", () => {
     if (!result.ok) return;
     expect(result.decision.isViolation).toBe(false);
     expect(result.decision.offendingServer).toBe("838");
-    expect(result.decision.reason).toContain("不计入");
+    expect(result.decision.reason).toContain("not counted");
   });
 
   it("uses the RIGHT player in a resource tile report and never the left victim", () => {
@@ -159,7 +159,7 @@ describe("Server 837 NAP rule engine", () => {
     expect(result.decision.isViolation).toBe(true);
     expect(result.decision.offendingAlliance).toBe("d00m");
     expect(result.decision.offendingPlayer).toBe("[d00m]RAKK");
-    expect(result.decision.reason).toContain("贸易货车");
+    expect(result.decision.reason).toContain("trade-truck");
   });
 
   it("does not trust a model-supplied foreign server if the label has no tag", () => {
@@ -234,7 +234,7 @@ describe("Server 837 NAP rule engine", () => {
     if (result.ok) return;
     expect(result.code).toBe("UNSUPPORTED_REPORT");
     expect(result.message).toBe(UNSUPPORTED_REPORT_MESSAGE);
-    expect(result.message).toBe("请上传赏金记录、矿区争夺或贸易货车战报");
+    expect(result.message).toBe(UNSUPPORTED_REPORT_MESSAGE);
   });
 
   it("rejects low-confidence extractions instead of scoring them", () => {

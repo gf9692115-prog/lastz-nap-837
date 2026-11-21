@@ -48,8 +48,8 @@ export function Leaderboard({
       <SectionHeading
         index="02"
         eyebrow="Leaderboard / 837"
-        title="联盟违规次数排行榜"
-        description="按已确认的本服违规次数降序排列，同一张战报只计一次。"
+        title="Alliance violation leaderboard"
+        description="Ranked by confirmed Server 837 violations. Each unique report counts once."
         action={
           <div className="flex items-center gap-4 rounded-sm border border-white/10 bg-white/[0.025] px-4 py-2.5">
             <div>
@@ -59,7 +59,7 @@ export function Leaderboard({
               <div className="mt-0.5 font-display text-lg font-bold leading-none text-white">
                 {String(stats.violationCount).padStart(2, "0")}
                 <span className="ml-1 font-sans text-[10px] font-normal text-zinc-500">
-                  次
+                  hits
                 </span>
               </div>
             </div>
@@ -71,7 +71,7 @@ export function Leaderboard({
               <div className="mt-0.5 font-display text-lg font-bold leading-none text-white">
                 {String(stats.allianceCount).padStart(2, "0")}
                 <span className="ml-1 font-sans text-[10px] font-normal text-zinc-500">
-                  个
+                  alliances
                 </span>
               </div>
             </div>
@@ -119,12 +119,14 @@ export function Leaderboard({
               </span>
             </div>
             <h3 className="font-display text-lg font-semibold text-white">
-              {unavailable ? "榜单数据暂时离线" : "目前没有违规记录"}
+              {unavailable
+                ? "Leaderboard data temporarily offline"
+                : "No violations recorded yet"}
             </h3>
             <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-zinc-500">
               {unavailable
-                ? "数据通道未连接或正在恢复，请稍后刷新页面。你仍可尝试上传战报。"
-                : "837 服暂未产生已确认违规。上传有效战报后，系统会自动更新联盟排名。"}
+                ? "The data channel is disconnected or recovering. Refresh in a moment; you can still submit a report."
+                : "Server 837 has no confirmed violations yet. Upload a valid report and the alliance ranking will update automatically."}
             </p>
           </div>
         ) : (
@@ -203,7 +205,10 @@ export function Leaderboard({
         )}
 
         <div className="flex flex-col justify-between gap-2 border-t border-white/[0.08] bg-white/[0.018] px-4 py-3 text-[10px] leading-relaxed text-zinc-600 sm:flex-row sm:items-center sm:px-6">
-          <span>仅统计 837 本服玩家的已确认违规，外服跨服行为不计分。</span>
+          <span>
+            Only confirmed violations by Server 837 players are scored.
+            Cross-server actions are exempt.
+          </span>
           <span className="font-mono uppercase tracking-[0.12em]">
             Unique report dedupe active
           </span>

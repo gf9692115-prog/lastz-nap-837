@@ -49,7 +49,7 @@ function failure(
 }
 
 function friendlyAlliance(alliance: string): string {
-  return alliance === UNKNOWN_ALLIANCE ? "未知联盟" : alliance;
+  return alliance === UNKNOWN_ALLIANCE ? "Unknown" : alliance;
 }
 
 function getServiceRoleKey(): string {
@@ -96,7 +96,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
   }
 
   if (request.method !== "POST") {
-    return failure("INVALID_IMAGE", "仅支持 POST 上传", 405);
+    return failure("INVALID_IMAGE", "Only POST uploads are supported.", 405);
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")?.trim();
@@ -118,7 +118,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
     return failure(
       "CONFIGURATION_ERROR",
-      "服务尚未完成配置，请联系管理员",
+      "The upload service is not fully configured. Contact the site admin.",
       503,
     );
   }
@@ -127,27 +127,27 @@ Deno.serve(async (request: Request): Promise<Response> => {
   try {
     formData = await request.formData();
   } catch {
-    return failure("INVALID_IMAGE", "无法读取上传内容，请重新选择图片", 400);
+    return failure("INVALID_IMAGE", "Could not read the upload. Choose the image again.", 400);
   }
 
   const image = formData.get("image");
   if (!image || typeof image === "string") {
-    return failure("INVALID_IMAGE", "请选择一张战报截图", 400);
+    return failure("INVALID_IMAGE", "Choose a report screenshot.", 400);
   }
 
   if (image.size <= 0) {
-    return failure("INVALID_IMAGE", "图片内容为空，请重新选择", 400);
+    return failure("INVALID_IMAGE", "The uploaded image is empty. Choose it again.", 400);
   }
 
   if (image.size > MAX_UPLOAD_BYTES) {
-    return failure("INVALID_IMAGE", "截图过大，请压缩后重试（最大 8MB）", 413);
+    return failure("INVALID_IMAGE", "The screenshot is too large. Compress it and try again (max 8MB).", 413);
   }
 
   let arrayBuffer: ArrayBuffer;
   try {
     arrayBuffer = await image.arrayBuffer();
   } catch {
-    return failure("INVALID_IMAGE", "无法读取图片，请重新选择", 400);
+    return failure("INVALID_IMAGE", "Could not read the image. Choose it again.", 400);
   }
 
   const bytes = new Uint8Array(arrayBuffer);
@@ -155,7 +155,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
   if (!mimeType) {
     return failure(
       "INVALID_IMAGE",
-      "仅支持 JPG、PNG、WebP 格式的战报截图",
+      "Only JPG, PNG, and WebP report screenshots are supported.",
       415,
     );
   }
@@ -174,7 +174,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
       "[upload-report] failed to create Supabase client:",
       error instanceof Error ? error.message : "unknown error",
     );
-    return failure("CONFIGURATION_ERROR", "数据服务尚未就绪，请稍后重试", 503);
+    return failure("CONFIGURATION_ERROR", "The data service is not ready. Try again shortly.", 503);
   }
 
   const bucket = Deno.env.get("SUPABASE_REPORTS_BUCKET")?.trim() ||
@@ -196,7 +196,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
     if (uploadError) {
       console.error("[upload-report] storage upload failed:", uploadError.message);
-      return failure("STORAGE_ERROR", "截图上传失败，请稍后重试", 502);
+      return failure("STORAGE_ERROR", "Evidence upload failed. Please try again.", 502);
     }
 
     uploadedPath = objectPath;
@@ -226,14 +226,14 @@ Deno.serve(async (request: Request): Promise<Response> => {
       if (error instanceof DeepSeekConfigurationError) {
         return failure(
           "CONFIGURATION_ERROR",
-          "AI 服务尚未配置，请联系管理员",
+          "The analysis service is not configured. Contact the site admin.",
           503,
         );
       }
       if (error instanceof DeepSeekAnalysisError) {
         return failure(
           "AI_ERROR",
-          "AI 识别暂时失败，请稍后重试或换一张更清晰的截图",
+          "AI analysis failed. Try again or upload a clearer screenshot.",
           502,
         );
       }
@@ -277,11 +277,11 @@ Deno.serve(async (request: Request): Promise<Response> => {
       uploadedPath = null;
 
       if (insertError.code === "23505") {
-        return failure("DUPLICATE", "该战报已记录过，请勿重复提交", 409);
+        return failure("DUPLICATE", "This report has already been recorded. Do not submit it again.", 409);
       }
 
       console.error("[upload-report] database insert failed:", insertError.message);
-      return failure("DATABASE_ERROR", "战报保存失败，请稍后重试", 500);
+      return failure("DATABASE_ERROR", "Could not save this report. Please try again.", 500);
     }
 
     uploadedPath = null;
@@ -295,9 +295,9 @@ Deno.serve(async (request: Request): Promise<Response> => {
         {
           ok: true,
           code: "VIOLATION_RECORDED",
-          message: `违规已记录：计入 [${friendlyAlliance(
+          message: `Violation recorded: 1 hit counted for [${friendlyAlliance(
             decision.offendingAlliance,
-          )}] 1 次违规`,
+          )}].`,
           record,
         },
         201,
@@ -308,7 +308,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
       {
         ok: true,
         code: "EXTERNAL_SERVER",
-        message: `该对手来自 #${decision.offendingServer} 服务器，属于正常跨服掠夺，不计入 ${HOME_SERVER_ID} 服 NAP 违规`,
+        message: `This opponent is from external Server #${decision.offendingServer}. Cross-server raids do not count against the Server ${HOME_SERVER_ID} NAP.`,
         record,
       },
       201,
@@ -326,11 +326,11 @@ Deno.serve(async (request: Request): Promise<Response> => {
     if (error instanceof DeepSeekConfigurationError) {
       return failure(
         "CONFIGURATION_ERROR",
-        "AI 服务尚未配置，请联系管理员",
+        "The analysis service is not configured. Contact the site admin.",
         503,
       );
     }
 
-    return failure("INTERNAL_ERROR", "服务暂时不可用，请稍后重试", 500);
+    return failure("INTERNAL_ERROR", "The service is temporarily unavailable. Please try again.", 500);
   }
 });

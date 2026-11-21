@@ -13,6 +13,7 @@ import {
 import {
   allianceBadge,
   allianceDisplayName,
+  evidenceAssessment,
   formatBattleTimestamp,
   playerNameWithoutAlliance,
   reportTypeLabel,
@@ -109,14 +110,14 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
               id="evidence-dialog-title"
               className="mt-1 truncate font-display text-[17px] font-bold text-white sm:text-xl"
             >
-              战报证据 · [{alliance}] {offenderName}
+              Evidence · [{alliance}] {offenderName}
             </h2>
           </div>
           <button
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            aria-label="关闭证据预览"
+            aria-label="Close evidence preview"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-white/10 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
           >
             <X className="h-4 w-4" />
@@ -134,13 +135,13 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={imageUrl}
-                alt={`服务器 837 违规证据：${alliance} 联盟玩家 ${offenderName} 的战报截图`}
+                alt={`Server 837 NAP evidence: report screenshot for ${alliance} player ${offenderName}`}
                 className="relative z-10 max-h-[64dvh] w-auto max-w-full object-contain"
               />
             ) : (
               <div className="relative z-10 flex flex-col items-center gap-3 text-zinc-500">
                 <ShieldCheck className="h-8 w-8 text-zinc-700" />
-                <span className="text-xs">该记录没有可用的截图证据</span>
+                <span className="text-xs">No screenshot evidence is available for this record.</span>
               </div>
             )}
           </div>
@@ -154,7 +155,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
             <dl className="mt-5 space-y-4">
               <div>
                 <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
-                  违规联盟
+                  Offending alliance
                 </dt>
                 <dd className="mt-1 font-mono text-lg font-semibold text-white">
                   {allianceBadge(record.offendingAlliance)}
@@ -164,7 +165,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="min-w-0">
                   <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
-                    违规玩家
+                    Offender
                   </dt>
                   <dd
                     className="mt-1 truncate text-[13px] font-medium text-zinc-200"
@@ -175,7 +176,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
                 </div>
                 <div className="min-w-0">
                   <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
-                    来源服务器
+                    Source server
                   </dt>
                   <dd className="mt-1 font-mono text-[13px] font-medium text-zinc-200">
                     #{record.offendingServer}
@@ -187,10 +188,10 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
                 <Swords className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
                 <div className="min-w-0">
                   <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
-                    战报中的受害方
+                    Victim
                   </dt>
                   <dd className="mt-1 text-[12px] leading-relaxed text-zinc-300">
-                    {victimName || "未展示 / 未识别到受害方"}
+                    {victimName || "Not shown or not identified on this report"}
                   </dd>
                 </div>
               </div>
@@ -199,7 +200,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
                 <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
                 <div>
                   <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
-                    战报时间 · UTC
+                    Battle time · UTC
                   </dt>
                   <dd className="mt-1 font-mono text-[13px] text-zinc-200">
                     {formatBattleTimestamp(record.battleTimestamp)}
@@ -209,10 +210,10 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
 
               <div className="border-t border-white/10 pt-4">
                 <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
-                  判定说明
+                  Assessment
                 </dt>
                 <dd className="mt-1.5 text-[12px] leading-relaxed text-zinc-400">
-                  {record.reason}
+                  {evidenceAssessment(record.reportType)}
                 </dd>
               </div>
             </dl>
@@ -224,7 +225,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
                 rel="noopener noreferrer"
                 className="mt-6 inline-flex h-10 w-full items-center justify-center gap-2 rounded-sm border border-white/15 bg-white/[0.04] font-display text-[11px] font-semibold uppercase tracking-[0.1em] text-zinc-200 transition-colors hover:border-acid/50 hover:text-acid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
               >
-                在新标签页打开原图
+                Open original image in a new tab
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
             ) : null}
