@@ -37,5 +37,6 @@ jobs:
       - name: Deploy upload-report
         run: |
           supabase functions deploy upload-report \
-            --project-ref "$PROJECT_REF" \
-            --no-verify-jwt
+            --remote="$PROJECT_REF" \
+            --no-verify-jwt \
+            --yes
