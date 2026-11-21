@@ -17,17 +17,18 @@ const metadataBase = resolveMetadataBase();
 export const metadata: Metadata = {
   ...(metadataBase ? { metadataBase } : {}),
   title: {
-    default: "NAP WATCH // Server 837 Violation Radar",
-    template: "%s · NAP WATCH",
+    default: "NAP WAR REPORT // Server 837 Violation Dossier",
+    template: "%s · NAP WAR REPORT",
   },
   description:
-    "Automated NAP violation detection for Last Z Server 837. Upload bounty, resource-tile, or trade-truck reports and let AI vision plus a deterministic ruleset identify offenders and update the alliance leaderboard.",
-  applicationName: "NAP WATCH 837",
+    "The NAP War Report for Last Z Server 837. Upload bounty, resource-tile, or trade-truck reports and let AI vision plus a deterministic ruleset identify offenders and update the alliance leaderboard.",
+  applicationName: "NAP WAR REPORT 837",
   keywords: [
     "Last Z",
     "Last Z Survival Shooter",
     "Server 837",
     "NAP",
+    "war report",
     "violation detection",
     "alliance leaderboard",
   ],
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   openGraph: {
-    title: "NAP WATCH // Server 837 Violation Radar",
+    title: "NAP WAR REPORT // Server 837 Violation Dossier",
     description:
       "Upload a report screenshot and identify Server 837 NAP offenders. AI extraction, server-side rules, and public evidence.",
     type: "website",
@@ -48,7 +49,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#060806",
+  themeColor: "#0A0606",
   colorScheme: "dark",
 };
 

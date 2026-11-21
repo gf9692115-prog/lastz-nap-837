@@ -187,16 +187,16 @@ export function AdminDialog({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="relative mx-auto my-4 w-full max-w-3xl overflow-hidden rounded-sm border border-white/15 bg-void-900 shadow-2xl sm:my-8">
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-white/10 bg-void-900/95 px-4 py-3.5 backdrop-blur sm:px-6">
+      <div className="dossier-panel relative mx-auto my-4 w-full max-w-3xl overflow-hidden shadow-2xl sm:my-8">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line-strong bg-[#150e0d]/95 px-4 py-3.5 backdrop-blur sm:px-6">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-acid">
+            <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-blood-300">
               <LockKeyhole className="h-3.5 w-3.5" />
               Admin / Moderation
             </div>
             <h2
               id="admin-dialog-title"
-              className="mt-1 font-display text-[17px] font-bold text-white sm:text-xl"
+              className="mt-1 font-decor text-[20px] uppercase tracking-[0.03em] text-bone"
             >
               {unlocked ? "Moderation archive" : "Admin access"}
             </h2>
@@ -205,7 +205,7 @@ export function AdminDialog({
             type="button"
             onClick={onClose}
             aria-label="Close admin panel"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-white/10 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
+            className="flex h-9 w-9 shrink-0 items-center justify-center border border-line-strong text-ash transition-colors hover:bg-white/5 hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
           >
             <X className="h-4 w-4" />
           </button>
@@ -214,13 +214,13 @@ export function AdminDialog({
         <div className="max-h-[calc(92dvh-74px)] overflow-y-auto p-4 sm:p-6">
           {!unlocked ? (
             <div>
-              <div className="flex items-start gap-3 rounded-sm border border-white/[0.08] bg-white/[0.025] p-3.5">
-                <KeyRound className="mt-0.5 h-4 w-4 shrink-0 text-acid" />
+              <div className="flex items-start gap-3 border border-line bg-black/20 p-3.5">
+                <KeyRound className="mt-0.5 h-4 w-4 shrink-0 text-acid-300" />
                 <div>
-                  <p className="text-[13px] font-medium text-zinc-200">
+                  <p className="text-[13px] font-medium text-bone">
                     Enter the moderation passphrase
                   </p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">
+                  <p className="mt-1 text-[11px] leading-relaxed text-ash">
                     The passphrase is verified server-side and held in memory for
                     this tab only. It is never stored in the browser.
                   </p>
@@ -244,12 +244,12 @@ export function AdminDialog({
                     value={token}
                     onChange={(event) => setToken(event.target.value)}
                     placeholder="Enter admin passphrase"
-                    className="h-11 min-w-0 flex-1 rounded-sm border border-white/15 bg-black/30 px-3 font-mono text-[12px] text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-acid/60 focus:ring-1 focus:ring-acid/50"
+                    className="h-11 min-w-0 flex-1 border border-line-strong bg-black/30 px-3 font-mono text-[12px] text-bone outline-none transition-colors placeholder:text-zinc-600 focus:border-acid/60 focus:ring-1 focus:ring-acid/50"
                   />
                   <button
                     type="submit"
                     disabled={loading || !token.trim()}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-sm bg-acid px-5 font-display text-[11px] font-bold uppercase tracking-[0.1em] text-void-950 transition-colors hover:bg-acid-300 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-11 items-center justify-center gap-2 bg-acid-300 px-5 font-display text-[11px] font-bold uppercase tracking-[0.1em] text-[#1a0d08] transition-colors hover:bg-acid disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {loading ? (
                       <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -261,7 +261,7 @@ export function AdminDialog({
                 </div>
               </form>
 
-              <p className="mt-3 text-[10px] leading-relaxed text-zinc-600">
+              <p className="mt-3 text-[10px] leading-relaxed text-ash">
                 Deletion is permanent. It removes the record, its evidence image,
                 and its leaderboard count.
               </p>
@@ -277,11 +277,11 @@ export function AdminDialog({
             <div>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-acid">
+                  <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-acid-300">
                     <ShieldCheck className="h-3.5 w-3.5" />
                     Moderation mode active
                   </div>
-                  <p className="mt-1 text-[11px] text-zinc-500">
+                  <p className="mt-1 text-[11px] text-ash">
                     {records.length} {records.length === 1 ? "record" : "records"}{" "}
                     · newest first
                   </p>
@@ -311,7 +311,7 @@ export function AdminDialog({
               ) : null}
 
               {records.length === 0 ? (
-                <div className="mt-6 rounded-sm border border-white/[0.08] bg-white/[0.02] px-5 py-10 text-center">
+                <div className="mt-6 border border-line bg-black/20 px-5 py-10 text-center">
                   <p className="font-display text-[15px] font-semibold text-zinc-300">
                     No records in the archive
                   </p>
@@ -332,12 +332,12 @@ export function AdminDialog({
                     return (
                       <li
                         key={record.id}
-                        className="rounded-sm border border-white/[0.08] bg-white/[0.02] p-3.5"
+                        className="border border-line bg-black/20 p-3.5"
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="rounded-sm border border-white/10 bg-white/[0.035] px-1.5 py-1 font-mono text-[8px] uppercase tracking-[0.1em] text-zinc-300">
+                              <span className="border border-line-strong bg-black/25 px-1.5 py-1 font-mono text-[8px] uppercase tracking-[0.1em] text-ash">
                                 {reportTypeLabel(record.reportType)}
                               </span>
                               <span
@@ -353,11 +353,11 @@ export function AdminDialog({
                               </span>
                             </div>
                             <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                              <span className="font-mono text-[13px] font-semibold text-white">
+                              <span className="font-mono text-[13px] font-semibold text-bone">
                                 {allianceBadge(record.offendingAlliance)}
                               </span>
                               <span
-                                className="truncate text-[12px] text-zinc-300"
+                                className="truncate text-[12px] text-[#c9b6aa]"
                                 title={playerName}
                               >
                                 {playerName}

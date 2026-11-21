@@ -310,12 +310,12 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
             ? STAGE_COPY[stage as Exclude<UploadStage, "idle">].title
             : "Click to choose or drop a report screenshot"
         }
-        className={`group relative flex min-h-[318px] w-full flex-col items-center justify-center overflow-hidden rounded-sm border border-dashed px-5 py-9 text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/80 focus-visible:ring-offset-4 focus-visible:ring-offset-void-900 sm:min-h-[344px] ${
+        className={`group relative flex min-h-[300px] w-full flex-col items-center justify-center overflow-hidden border border-dashed px-5 py-8 text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/80 focus-visible:ring-offset-4 focus-visible:ring-offset-void-900 sm:min-h-[330px] ${
           isDragging
-            ? "border-acid bg-acid/[0.09]"
+            ? "border-acid bg-acid/[0.08]"
             : busy
-              ? "cursor-wait border-acid/45 bg-acid/[0.035]"
-              : "cursor-pointer border-white/15 bg-white/[0.025] hover:border-acid/55 hover:bg-acid/[0.035]"
+              ? "cursor-wait border-acid/45 bg-acid/[0.03]"
+              : "cursor-pointer border-line-strong bg-black/20 hover:border-acid/55 hover:bg-acid/[0.025]"
         }`}
       >
         <span
@@ -324,19 +324,19 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
         />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-2 top-2 h-4 w-4 border-l border-t border-acid/40"
+          className="pointer-events-none absolute left-2 top-2 h-4 w-4 border-l border-t border-blood/60"
         />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute right-2 top-2 h-4 w-4 border-r border-t border-acid/40"
+          className="pointer-events-none absolute right-2 top-2 h-4 w-4 border-r border-t border-blood/60"
         />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-2 left-2 h-4 w-4 border-b border-l border-acid/40"
+          className="pointer-events-none absolute bottom-2 left-2 h-4 w-4 border-b border-l border-blood/60"
         />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-2 right-2 h-4 w-4 border-b border-r border-acid/40"
+          className="pointer-events-none absolute bottom-2 right-2 h-4 w-4 border-b border-r border-blood/60"
         />
 
         {previewUrl ? (
@@ -363,8 +363,8 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
           <span
             className={`relative flex h-16 w-16 items-center justify-center rounded-full border transition-colors ${
               busy || isDragging
-                ? "border-acid/60 bg-acid/10 text-acid"
-                : "border-white/[0.12] bg-white/[0.035] text-zinc-300 group-hover:border-acid/50 group-hover:text-acid"
+                ? "border-acid/60 bg-acid/10 text-acid-300"
+                : "border-line-strong bg-black/30 text-ash group-hover:border-acid/50 group-hover:text-acid-300"
             }`}
           >
             {busy ? (
@@ -379,14 +379,14 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
             )}
           </span>
 
-          <span className="mt-6 font-display text-[21px] font-bold leading-tight tracking-[-0.01em] text-white sm:text-[23px]">
+          <span className="mt-5 font-decor text-[24px] font-normal uppercase leading-tight tracking-[0.02em] text-bone sm:text-[27px]">
             {busy && stageCopy
               ? stageCopy.title
               : isDragging
                 ? "Drop to start the scan"
                 : "Upload a report screenshot"}
           </span>
-          <span className="mt-2 max-w-[320px] text-[12px] leading-relaxed text-zinc-400 sm:text-[13px]">
+          <span className="mt-2 max-w-[320px] text-[11px] leading-relaxed text-ash sm:text-[12px]">
             {busy && stageCopy
               ? stageCopy.detail
               : isDragging
@@ -395,7 +395,7 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
           </span>
 
           {!busy && !isDragging ? (
-            <span className="mt-5 inline-flex items-center gap-2 rounded-sm bg-acid px-4 py-2.5 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-void-950 transition-colors group-hover:bg-acid-300">
+            <span className="mt-5 inline-flex items-center gap-2 bg-acid-300 px-4 py-2.5 font-display text-[11px] font-bold uppercase tracking-[0.08em] text-[#1a0d08] transition-colors group-hover:bg-acid">
               <ScanLine className="h-4 w-4" />
               Choose screenshot
             </span>
@@ -406,15 +406,15 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
             </span>
           )}
 
-          <span className="mt-4 font-mono text-[9px] uppercase tracking-[0.13em] text-zinc-600">
+          <span className="mt-4 font-mono text-[8px] uppercase tracking-[0.12em] text-zinc-600">
             HEIC to JPG · Auto-compress · Original ≤ 15MB
           </span>
         </span>
       </button>
 
       <div className="mt-3 flex items-start gap-2 px-0.5">
-        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" />
-        <p className="text-[10px] leading-relaxed text-zinc-500">
+        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ash" />
+        <p className="text-[10px] leading-relaxed text-ash">
           Upload the full original image with both sides and the timestamp visible. Confirmed violations become public evidence.
         </p>
       </div>

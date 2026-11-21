@@ -95,7 +95,7 @@ function ReportCard({
       type="button"
       onClick={() => onOpen(record)}
       aria-haspopup="dialog"
-      className={`group relative flex h-full w-full flex-col overflow-hidden rounded-sm border border-white/10 bg-void-900/75 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-void-850 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 ${style.glow}`}
+      className={`group dossier-card relative flex h-full w-full flex-col overflow-hidden border border-line-strong text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-blood/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 ${style.glow}`}
     >
       <span
         aria-hidden="true"
@@ -121,28 +121,28 @@ function ReportCard({
 
       <div className="flex flex-1 items-start justify-between gap-4 px-4 pb-4 pt-5 sm:px-5">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
-            <ShieldCheck className="h-3 w-3 text-acid/70" />
+          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-blood-300">
+            <ShieldCheck className="h-3 w-3 text-acid/80" />
             Confirmed violator
           </div>
 
           <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <span className="font-mono text-[17px] font-bold leading-tight text-white sm:text-[19px]">
+            <span className="font-mono text-[16px] font-bold leading-tight text-bone sm:text-[18px]">
               {allianceBadge(record.offendingAlliance)}
             </span>
             <span
-              className="max-w-[190px] truncate text-[13px] font-medium text-zinc-300 sm:max-w-[230px]"
+              className="max-w-[190px] truncate text-[12px] font-medium text-[#c9b6aa] sm:max-w-[230px]"
               title={offenderName}
             >
               {offenderName}
             </span>
           </div>
 
-          <div className="mt-3 flex items-start gap-2 text-[10px] leading-relaxed text-zinc-500">
+          <div className="mt-3 flex items-start gap-2 text-[10px] leading-relaxed text-ash">
             <Swords className="mt-0.5 h-3 w-3 shrink-0" />
             <span className="line-clamp-2">
               Victim:{" "}
-              <span className="text-zinc-400">
+              <span className="text-ash">
                 {victimName || "Not shown on this report"}
               </span>
             </span>
@@ -151,7 +151,7 @@ function ReportCard({
 
         <span
           aria-hidden="true"
-          className={`relative flex h-[72px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-sm border border-white/10 bg-black/40 sm:h-[82px] sm:w-[68px]`}
+          className={`relative flex h-[72px] w-[60px] shrink-0 items-center justify-center overflow-hidden border border-line-strong bg-black/40 sm:h-[82px] sm:w-[68px]`}
         >
           {imageUrl ? (
             // Evidence thumbnails are public Supabase Storage objects.
@@ -172,11 +172,11 @@ function ReportCard({
         </span>
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/[0.07] px-4 py-3 sm:px-5">
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-line px-4 py-3 sm:px-5">
         <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-zinc-600">
           Public evidence
         </span>
-        <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-zinc-500 transition-colors group-hover:text-acid">
+        <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ash transition-colors group-hover:text-acid-300">
           View evidence
           <Maximize2 className="h-3 w-3" />
         </span>
@@ -194,7 +194,7 @@ export function ReportFeed({
   const closeModal = useCallback(() => setSelected(null), []);
 
   return (
-    <section id="evidence" className="scroll-mt-24 pt-14 sm:pt-20">
+    <section id="evidence" className="scroll-mt-24 pt-10 sm:pt-14">
       <SectionHeading
         index="03"
         eyebrow="Evidence feed"
@@ -202,14 +202,14 @@ export function ReportFeed({
         description="Every record includes its original screenshot. Open any card to inspect the evidence and the assessment."
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-2 rounded-sm border border-white/10 bg-white/[0.025] px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-zinc-500">
-              <Newspaper className="h-3.5 w-3.5 text-acid/80" />
+            <div className="inline-flex items-center gap-2 border border-line-strong bg-black/25 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ash">
+              <Newspaper className="h-3.5 w-3.5 text-blood-300" />
               All times shown in UTC
             </div>
             <button
               type="button"
               onClick={onAdminClick}
-              className="inline-flex items-center gap-2 rounded-sm border border-white/10 bg-white/[0.025] px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-zinc-500 transition-colors hover:border-white/25 hover:text-white"
+              className="inline-flex items-center gap-2 border border-line-strong bg-black/25 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ash transition-colors hover:border-blood/50 hover:text-bone"
             >
               <LockKeyhole className="h-3.5 w-3.5" />
               Admin
@@ -219,18 +219,18 @@ export function ReportFeed({
       />
 
       {unavailable || reports.length === 0 ? (
-        <div className="mt-6 flex min-h-[240px] flex-col items-center justify-center rounded-sm border border-white/10 bg-void-900/60 px-6 py-12 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/[0.025]">
+        <div className="dossier-panel mt-5 flex min-h-[230px] flex-col items-center justify-center px-6 py-12 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border border-line-strong bg-black/30">
             {unavailable ? (
               <ScanSearch className="h-5 w-5 text-zinc-600" />
             ) : (
               <ShieldCheck className="h-5 w-5 text-acid/80" />
             )}
           </span>
-          <h3 className="mt-4 font-display text-lg font-semibold text-white">
+          <h3 className="mt-4 font-decor text-[20px] uppercase tracking-[0.03em] text-bone">
             {unavailable ? "Evidence feed temporarily offline" : "No public reports yet"}
           </h3>
-          <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-zinc-500">
+          <p className="mt-2 max-w-sm text-[11px] leading-relaxed text-ash">
             {unavailable
               ? "The report archive cannot be read right now. Refresh in a moment."
               : "New confirmed records appear here automatically after AI extraction and rule verification."}

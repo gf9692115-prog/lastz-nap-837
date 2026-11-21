@@ -13,24 +13,24 @@ interface LeaderboardProps {
 
 const RANK_STYLES = [
   {
-    rank: "text-acid",
-    line: "bg-acid",
-    panel: "bg-acid/[0.045]",
-    bar: "bg-gradient-to-r from-acid/80 to-acid/20",
+    rank: "text-acid-300",
+    line: "bg-blood",
+    panel: "bg-blood/[0.06]",
+    bar: "bg-gradient-to-r from-acid/80 to-acid/15",
     crown: "text-acid",
   },
   {
-    rank: "text-zinc-200",
-    line: "bg-zinc-400/70",
-    panel: "bg-white/[0.02]",
-    bar: "bg-gradient-to-r from-zinc-300/60 to-zinc-500/10",
-    crown: "text-zinc-400",
+    rank: "text-bone",
+    line: "bg-line-strong",
+    panel: "bg-white/[0.018]",
+    bar: "bg-gradient-to-r from-[#b49a86]/55 to-[#b49a86]/10",
+    crown: "text-ash",
   },
   {
     rank: "text-signal-amber",
-    line: "bg-signal-amber/70",
-    panel: "bg-signal-amber/[0.025]",
-    bar: "bg-gradient-to-r from-signal-amber/55 to-signal-amber/10",
+    line: "bg-signal-amber/60",
+    panel: "bg-signal-amber/[0.02]",
+    bar: "bg-gradient-to-r from-signal-amber/50 to-signal-amber/10",
     crown: "text-signal-amber/80",
   },
 ];
@@ -44,33 +44,33 @@ export function Leaderboard({
   const isEmpty = entries.length === 0;
 
   return (
-    <section id="leaderboard" className="scroll-mt-24 pt-14 sm:pt-20">
+    <section id="leaderboard" className="scroll-mt-24 pt-10 sm:pt-14">
       <SectionHeading
         index="02"
         eyebrow="Leaderboard / 837"
         title="Alliance violation leaderboard"
         description="Ranked by confirmed Server 837 violations. Each unique report counts once."
         action={
-          <div className="flex items-center gap-4 rounded-sm border border-white/10 bg-white/[0.025] px-4 py-2.5">
+          <div className="flex items-center gap-4 border border-line-strong bg-black/25 px-4 py-2.5">
             <div>
-              <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-500">
+              <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-ash">
                 Confirmed
               </div>
-              <div className="mt-0.5 font-display text-lg font-bold leading-none text-white">
+              <div className="mt-0.5 font-decor text-lg leading-none text-acid-300">
                 {String(stats.violationCount).padStart(2, "0")}{" "}
-                <span className="font-sans text-[10px] font-normal text-zinc-500">
+                <span className="font-sans text-[10px] font-normal tracking-wide text-ash">
                   hits
                 </span>
               </div>
             </div>
-            <span className="h-7 w-px bg-white/10" aria-hidden="true" />
+            <span className="h-7 w-px bg-line-strong" aria-hidden="true" />
             <div>
-              <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-500">
+              <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-ash">
                 Alliances
               </div>
-              <div className="mt-0.5 font-display text-lg font-bold leading-none text-white">
+              <div className="mt-0.5 font-decor text-lg leading-none text-acid-300">
                 {String(stats.allianceCount).padStart(2, "0")}{" "}
-                <span className="font-sans text-[10px] font-normal text-zinc-500">
+                <span className="font-sans text-[10px] font-normal tracking-wide text-ash">
                   alliances
                 </span>
               </div>
@@ -79,15 +79,15 @@ export function Leaderboard({
         }
       />
 
-      <div className="relative mt-6 overflow-hidden rounded-sm border border-white/10 bg-void-900/75 shadow-panel">
+      <div className="dossier-panel relative mt-5 overflow-hidden">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/3 top-0 h-40 w-80 -translate-y-1/2 rounded-full bg-acid/[0.035] blur-3xl"
+          className="pointer-events-none absolute left-1/3 top-0 h-40 w-80 -translate-y-1/2 rounded-full bg-blood/[0.07] blur-3xl"
         />
 
-        <div className="flex items-center justify-between border-b border-white/[0.08] bg-white/[0.025] px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-500">
-            <Activity className="h-3 w-3 text-acid/80" />
+        <div className="flex items-center justify-between border-b border-line-strong bg-[linear-gradient(90deg,#2a0d10,#150e0d)] px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-ash">
+            <Activity className="h-3 w-3 text-blood-300" />
             Server 837 enforcement ledger
           </div>
           <div className="hidden font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-600 sm:block">
@@ -118,19 +118,19 @@ export function Leaderboard({
                 )}
               </span>
             </div>
-            <h3 className="font-display text-lg font-semibold text-white">
+            <h3 className="font-decor text-[20px] uppercase tracking-[0.03em] text-bone">
               {unavailable
                 ? "Leaderboard data temporarily offline"
                 : "No violations recorded yet"}
             </h3>
-            <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-zinc-500">
+            <p className="mt-2 max-w-sm text-[11px] leading-relaxed text-ash">
               {unavailable
                 ? "The data channel is disconnected or recovering. Refresh in a moment; you can still submit a report."
                 : "Server 837 has no confirmed violations yet. Upload a valid report and the alliance ranking will update automatically."}
             </p>
           </div>
         ) : (
-          <ol className="divide-y divide-white/[0.065]">
+          <ol className="divide-y divide-line">
             {entries.map((entry, index) => {
               const rank = index + 1;
               const style = RANK_STYLES[index] ?? {
@@ -157,7 +157,7 @@ export function Leaderboard({
 
                   <div className="flex items-center gap-2">
                     <span
-                      className={`font-display text-xl font-black leading-none tracking-[-0.04em] sm:text-2xl ${style.rank}`}
+                      className={`font-decor text-[23px] leading-none tracking-[0.01em] sm:text-[28px] ${style.rank}`}
                     >
                       {String(rank).padStart(2, "0")}
                     </span>
@@ -172,17 +172,17 @@ export function Leaderboard({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                       <span
-                        className="truncate font-mono text-[15px] font-semibold text-white sm:text-[17px]"
+                        className="truncate font-mono text-[14px] font-semibold text-bone sm:text-[16px]"
                         title={allianceDisplayName(entry.alliance)}
                       >
                         {allianceBadge(entry.alliance)}
                       </span>
-                      <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-zinc-600">
+                      <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-ash">
                         {entry.offenderCount} offender
                         {entry.offenderCount === 1 ? "" : "s"}
                       </span>
                     </div>
-                    <div className="mt-2 h-1 w-full max-w-md overflow-hidden rounded-full bg-white/[0.055]">
+                    <div className="mt-2 h-1 w-full max-w-md overflow-hidden rounded-full bg-black/50">
                       <div
                         className={`h-full rounded-full ${style.bar}`}
                         style={{ width: `${percentage}%` }}
@@ -191,7 +191,7 @@ export function Leaderboard({
                   </div>
 
                   <div className="text-right">
-                    <div className="font-display text-2xl font-black leading-none tracking-[-0.03em] text-white sm:text-[30px]">
+                    <div className="font-decor text-[26px] leading-none text-acid-300 sm:text-[32px]">
                       {String(entry.violationCount).padStart(2, "0")}
                     </div>
                     <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.16em] text-zinc-600">
@@ -204,7 +204,7 @@ export function Leaderboard({
           </ol>
         )}
 
-        <div className="flex flex-col justify-between gap-2 border-t border-white/[0.08] bg-white/[0.018] px-4 py-3 text-[10px] leading-relaxed text-zinc-600 sm:flex-row sm:items-center sm:px-6">
+        <div className="flex flex-col justify-between gap-2 border-t border-line-strong bg-black/20 px-4 py-3 text-[10px] leading-relaxed text-zinc-600 sm:flex-row sm:items-center sm:px-6">
           <span>
             Only confirmed violations by Server 837 players are scored.
             Cross-server actions are exempt.

@@ -98,9 +98,9 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
     >
       <div
         ref={dialogRef}
-        className="relative max-h-[92dvh] w-full max-w-4xl animate-slide-up overflow-y-auto rounded-sm border border-white/15 bg-void-900 shadow-2xl"
+        className="dossier-panel relative max-h-[92dvh] w-full max-w-4xl animate-slide-up overflow-y-auto shadow-2xl"
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-white/10 bg-void-900/95 px-4 py-3.5 backdrop-blur sm:px-6">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line-strong bg-[#150e0d]/95 px-4 py-3.5 backdrop-blur sm:px-6">
           <div className="min-w-0">
             <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-acid">
               <ShieldCheck className="h-3.5 w-3.5" />
@@ -118,14 +118,14 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
             type="button"
             onClick={onClose}
             aria-label="Close evidence preview"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-white/10 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
+            className="flex h-9 w-9 shrink-0 items-center justify-center border border-line-strong text-ash transition-colors hover:bg-white/5 hover:text-bone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <div className="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
-          <div className="relative flex min-h-[260px] items-center justify-center overflow-hidden border-b border-white/10 bg-black/60 p-2 sm:min-h-[420px] lg:border-b-0 lg:border-r">
+          <div className="relative flex min-h-[260px] items-center justify-center overflow-hidden border-b border-line-strong bg-black/60 p-2 sm:min-h-[420px] lg:border-b-0 lg:border-r">
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 bg-fine-grid opacity-25 [background-size:26px_26px]"
@@ -147,7 +147,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
           </div>
 
           <div className="p-4 sm:p-6">
-            <div className="inline-flex items-center gap-2 rounded-sm border border-acid/25 bg-acid/[0.07] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-acid">
+            <div className="inline-flex items-center gap-2 border border-acid/30 bg-acid/[0.07] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-acid-300">
               <span className="h-1.5 w-1.5 rounded-full bg-acid" />
               {reportTypeLabel(record.reportType)}
             </div>
@@ -157,7 +157,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
                 <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
                   Offending alliance
                 </dt>
-                <dd className="mt-1 font-mono text-lg font-semibold text-white">
+                <dd className="mt-1 font-mono text-lg font-semibold text-bone">
                   {allianceBadge(record.offendingAlliance)}
                 </dd>
               </div>
@@ -184,7 +184,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-sm border border-white/[0.07] bg-white/[0.025] p-3">
+              <div className="flex items-start gap-3 border border-line bg-black/20 p-3">
                 <Swords className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
                 <div className="min-w-0">
                   <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
@@ -208,7 +208,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
                 </div>
               </div>
 
-              <div className="border-t border-white/10 pt-4">
+              <div className="border-t border-line-strong pt-4">
                 <dt className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">
                   Assessment
                 </dt>
@@ -223,7 +223,7 @@ export function EvidenceModal({ record, onClose }: EvidenceModalProps) {
                 href={imageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 inline-flex h-10 w-full items-center justify-center gap-2 rounded-sm border border-white/15 bg-white/[0.04] font-display text-[11px] font-semibold uppercase tracking-[0.1em] text-zinc-200 transition-colors hover:border-acid/50 hover:text-acid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
+                className="mt-6 inline-flex h-10 w-full items-center justify-center gap-2 border border-line-strong bg-black/20 font-display text-[11px] font-semibold uppercase tracking-[0.1em] text-bone transition-colors hover:border-acid/50 hover:text-acid-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid"
               >
                 Open original image in a new tab
                 <ExternalLink className="h-3.5 w-3.5" />

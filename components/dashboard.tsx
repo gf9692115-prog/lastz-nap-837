@@ -9,8 +9,6 @@ import {
   LockKeyhole,
   Radio,
   ShieldCheck,
-  Sparkles,
-  Swords,
   TriangleAlert,
 } from "lucide-react";
 
@@ -47,14 +45,77 @@ function BackgroundEffects() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-void-950" />
-      <div className="absolute inset-x-0 top-0 h-[720px] bg-fine-grid opacity-55 [background-size:46px_46px] [mask-image:linear-gradient(to_bottom,black,transparent_88%)]" />
-      <div className="absolute -right-40 -top-56 h-[620px] w-[620px] rounded-full bg-acid/[0.075] blur-[140px]" />
-      <div className="absolute -left-60 top-[460px] h-[520px] w-[520px] rounded-full bg-signal-cyan/[0.035] blur-[140px]" />
-      <div className="absolute inset-x-0 top-[680px] h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      <div className="absolute left-[calc(50%-590px)] top-0 hidden h-full w-px bg-gradient-to-b from-white/10 via-white/[0.035] to-transparent xl:block" />
-      <div className="absolute right-[calc(50%-590px)] top-0 hidden h-full w-px bg-gradient-to-b from-white/10 via-white/[0.035] to-transparent xl:block" />
-      <div className="absolute left-1/2 top-[180px] h-[420px] w-[760px] -translate-x-1/2 rounded-full bg-acid/[0.018] blur-3xl" />
+      <div className="absolute inset-x-0 top-0 h-[820px] bg-fine-grid opacity-35 [background-size:46px_46px] [mask-image:linear-gradient(to_bottom,black,transparent_90%)]" />
+      <div className="absolute -right-48 -top-56 h-[760px] w-[760px] rounded-full bg-blood/[0.13] blur-[170px]" />
+      <div className="absolute -left-64 top-[480px] h-[620px] w-[620px] rounded-full bg-acid/[0.04] blur-[170px]" />
+      <div className="absolute left-1/2 top-[170px] h-[460px] w-[900px] -translate-x-1/2 rounded-full bg-blood/[0.045] blur-3xl" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blood/70 to-transparent" />
+      <div className="absolute inset-x-0 top-[720px] h-px bg-gradient-to-r from-transparent via-line-strong to-transparent" />
+      <div className="absolute left-[calc(50%-590px)] top-0 hidden h-full w-px bg-gradient-to-b from-blood/25 via-line to-transparent xl:block" />
+      <div className="absolute right-[calc(50%-590px)] top-0 hidden h-full w-px bg-gradient-to-b from-blood/25 via-line to-transparent xl:block" />
+    </div>
+  );
+}
+
+function HeroCrest() {
+  return (
+    <div
+      aria-hidden="true"
+      className="relative h-[74px] w-[62px] shrink-0 sm:h-[92px] sm:w-[78px]"
+    >
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-[#3a0f18] via-[#210a0e] to-[#120708] shadow-[0_0_38px_rgba(200,16,46,.34)]"
+        style={{
+          clipPath: "polygon(50% 0,100% 13%,100% 68%,50% 100%,0 68%,0 13%)",
+        }}
+      />
+      <div
+        className="absolute inset-[4px] border border-acid/25 bg-[#0f0707]"
+        style={{
+          clipPath: "polygon(50% 0,100% 13%,100% 68%,50% 100%,0 68%,0 13%)",
+        }}
+      />
+      <div className="absolute inset-x-[11px] top-[13px] h-px bg-acid/45" />
+      <span className="absolute inset-0 flex items-center justify-center pt-1 font-decor text-[30px] leading-none text-bone sm:text-[40px]">
+        837
+      </span>
+      <span className="absolute inset-x-0 bottom-[13px] text-center font-mono text-[6px] uppercase tracking-[0.22em] text-acid/80">
+        NAP
+      </span>
+    </div>
+  );
+}
+
+function KpiCard({
+  label,
+  value,
+  hint,
+  valueClassName = "",
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  valueClassName?: string;
+}) {
+  return (
+    <div className="relative h-full overflow-hidden border border-line-strong bg-[linear-gradient(180deg,#1d1211_0%,#130b0a_100%)] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.04),0_10px_26px_rgba(0,0,0,.55)]">
+      <span className="absolute inset-y-0 left-0 w-[3px] bg-gradient-to-b from-blood to-blood-600" />
+      <span className="absolute -right-7 -top-10 h-24 w-24 rounded-full bg-blood/20 blur-2xl" />
+      <div className="relative font-sans text-[8px] font-bold uppercase tracking-[0.18em] text-[#c08078]">
+        {label}
+      </div>
+      <div
+        className={`relative mt-1.5 truncate font-decor leading-none ${valueClassName}`}
+        title={value}
+      >
+        {value}
+      </div>
+      <div
+        className="relative mt-1.5 truncate text-[10px] leading-relaxed text-[#8f776d]"
+        title={hint}
+      >
+        {hint}
+      </div>
     </div>
   );
 }
@@ -62,193 +123,123 @@ function BackgroundEffects() {
 function Hero({ data }: HeroProps) {
   const latest = data.latestViolations[0];
   const unavailable = data.dataUnavailable;
+  const latestValue = latest
+    ? allianceBadge(latest.offendingAlliance)
+    : "—";
+  const latestHint = latest
+    ? `${reportTypeLabel(latest.reportType)} · ${formatShortBattleTimestamp(latest.battleTimestamp)} UTC`
+    : "No confirmed offender yet";
 
   return (
-    <section className="relative pt-10 sm:pt-14 lg:pt-16">
-      <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(330px,0.65fr)] lg:gap-12">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="flex items-center gap-2 rounded-sm border border-acid/25 bg-acid/[0.055] px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-acid">
+    <section className="relative pt-4 sm:pt-6">
+      <div className="hero-shell px-4 pb-8 pt-4 sm:px-7 sm:pb-10 sm:pt-5">
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="stamp">
               <Radio className="h-3 w-3" />
-              Server {SITE.server} / Live enforcement
+              Server {SITE.server}
             </span>
-            <span className="hidden font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-600 sm:inline">
-              Season protocol v1.0
+            <span className="stamp stamp-gold">NAP Sector</span>
+            <span className="ml-auto hidden font-mono text-[8px] uppercase tracking-[0.18em] text-[#9c6a62] sm:inline">
+              Enforcement dossier · {unavailable ? "syncing" : "live"}
             </span>
           </div>
 
-          <h1 className="mt-6 max-w-[760px] font-display text-[clamp(2.75rem,8.5vw,5.6rem)] font-black leading-[0.9] tracking-[-0.05em] text-white">
-            NAP<span className="mx-1 text-acid sm:mx-2">//</span>RADAR
-          </h1>
-
-          <p className="mt-5 max-w-xl text-[14px] leading-7 text-zinc-400 sm:text-[15px]">
-            Upload a real report. AI reads the screenshot and a server-side ruleset
-            makes the final call.{" "}
-            <span className="text-zinc-200">
-              Only Server {SITE.server} players are scored
-            </span>
-            ; cross-server actions are exempt, and attacker/victim sides are never
-            reversed.
-          </p>
-
-          <div className="mt-7 flex flex-wrap items-center gap-2.5">
-            <a
-              href="#upload"
-              className="group inline-flex h-11 items-center gap-2 rounded-sm bg-acid px-5 font-display text-[12px] font-bold uppercase tracking-[0.1em] text-void-950 transition-colors hover:bg-acid-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid focus-visible:ring-offset-4 focus-visible:ring-offset-void-950"
-            >
-              Start scan
-              <ArrowDownRight className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
-            </a>
-            <a
-              href="#leaderboard"
-              className="inline-flex h-11 items-center gap-2 rounded-sm border border-white/[0.12] bg-white/[0.025] px-5 font-display text-[12px] font-semibold uppercase tracking-[0.08em] text-zinc-300 transition-colors hover:border-white/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-            >
-              View leaderboard
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </a>
+          <div className="mt-5 flex items-center gap-4 sm:gap-6">
+            <HeroCrest />
+            <div className="min-w-0 flex-1">
+              <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#c08078] sm:text-[9px]">
+                Last Z: Survival Shooter · Server {SITE.server}
+              </div>
+              <h1 className="hero-title-metal mt-1 whitespace-nowrap font-decor text-[clamp(2.35rem,8vw,5rem)] uppercase leading-[0.88] tracking-[0.01em]">
+                NAP WAR REPORT
+              </h1>
+              <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[8px] uppercase tracking-[0.16em] text-ash sm:text-[9px]">
+                <span className="text-acid-300">[NAP]</span>
+                <span>Server {SITE.server}</span>
+                <span className="text-blood-300">/</span>
+                <span>Violation enforcement dossier</span>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2.5">
-            {[
-              "Multilingual report OCR",
-              "Right-side / log attacker",
-              "Cross-server exempt",
-              "Minute-level dedupe",
-            ].map((feature) => (
-              <span
-                key={feature}
-                className="flex items-center gap-2 text-[10px] tracking-wide text-zinc-500"
-              >
-                <span className="h-1 w-1 rounded-full bg-acid/70" />
-                {feature}
+          <div className="mt-5 grid gap-4 border-t border-blood/25 pt-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <p className="max-w-2xl text-[12px] leading-6 text-[#c9b6aa] sm:text-[13px]">
+              Upload a real report. AI reads the screenshot and a server-side
+              ruleset makes the final call.{" "}
+              <span className="text-bone">
+                Only Server {SITE.server} players are scored
               </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative">
-          <div
-            aria-hidden="true"
-            className="absolute -inset-3 rounded-sm border border-white/[0.04]"
-          />
-          <div className="relative overflow-hidden rounded-sm border border-white/[0.12] bg-void-900/85 p-5 shadow-panel backdrop-blur-md sm:p-6">
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full border border-acid/10"
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-8 -top-12 h-52 w-52 animate-[spin_24s_linear_infinite] rounded-full border border-dashed border-white/[0.08]"
-            />
-            <div className="relative flex items-center justify-between">
-              <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-500">
-                <Crosshair className="h-3.5 w-3.5 text-acid/80" />
-                Live ledger
-              </div>
-              <span
-                className={`flex items-center gap-1.5 rounded-sm border px-2 py-1 font-mono text-[8px] uppercase tracking-[0.14em] ${
-                  unavailable
-                    ? "border-signal-amber/25 bg-signal-amber/[0.06] text-signal-amber"
-                    : "border-acid/20 bg-acid/[0.05] text-acid"
-                }`}
+              ; cross-server actions are exempt, and attacker/victim sides are
+              never reversed.
+            </p>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <a
+                href="#upload"
+                className="group inline-flex h-10 items-center gap-2 bg-acid-300 px-5 font-display text-[11px] font-bold uppercase tracking-[0.1em] text-[#1a0d08] transition-colors hover:bg-acid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid focus-visible:ring-offset-4 focus-visible:ring-offset-void-950"
               >
-                <span
-                  className={`h-1 w-1 rounded-full ${
-                    unavailable
-                      ? "bg-signal-amber"
-                      : "animate-pulse-dot bg-acid"
-                  }`}
-                />
-                {unavailable ? "Syncing" : "Live"}
-              </span>
+                Start scan
+                <ArrowDownRight className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
+              </a>
+              <a
+                href="#leaderboard"
+                className="inline-flex h-10 items-center gap-2 border border-line-strong bg-black/20 px-5 font-display text-[11px] font-semibold uppercase tracking-[0.08em] text-bone transition-colors hover:border-blood/60 hover:text-acid-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acid/60"
+              >
+                View leaderboard
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
             </div>
+          </div>
 
-            <div className="relative mt-8 grid grid-cols-2 gap-5">
-              <div>
-                <div className="text-[10px] tracking-wide text-zinc-500">
-                  Total violations
-                </div>
-                <div className="mt-2 font-display text-[46px] font-black leading-none tracking-[-0.055em] text-white sm:text-[54px]">
-                  {formatCount(data.stats.violationCount, unavailable)}
-                </div>
-                <div className="mt-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-600">
-                  Confirmed hits
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] tracking-wide text-zinc-500">
-                  Ranked alliances
-                </div>
-                <div className="mt-2 font-display text-[46px] font-black leading-none tracking-[-0.055em] text-white sm:text-[54px]">
-                  {formatCount(data.stats.allianceCount, unavailable)}
-                </div>
-                <div className="mt-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-600">
-                  Alliances
-                </div>
-              </div>
-            </div>
-
-            <div className="relative mt-7 flex items-center justify-between border-t border-white/[0.08] pt-4">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-acid" />
-                <div>
-                  <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-zinc-600">
-                    Scope
-                  </div>
-                  <div className="mt-0.5 text-[11px] font-medium text-zinc-300">
-                    Server {SITE.server} only
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-zinc-600">
-                  Ruleset
-                </div>
-                <div className="mt-0.5 text-[11px] font-medium text-zinc-300">
-                  03 active
-                </div>
-              </div>
-            </div>
-
-            <div className="relative mt-4 rounded-sm border border-white/[0.07] bg-black/25 px-3 py-2.5">
-              {latest ? (
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <Sparkles className="h-3 w-3 shrink-0 text-acid/70" />
-                    <span className="truncate font-mono text-[9px] tracking-wide text-zinc-400">
-                      {reportTypeLabel(latest.reportType)} ·{" "}
-                      {allianceBadge(latest.offendingAlliance)}
-                    </span>
-                  </div>
-                  <span className="shrink-0 font-mono text-[8px] uppercase tracking-[0.12em] text-zinc-600">
-                    {formatShortBattleTimestamp(latest.battleTimestamp)}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Swords className="h-3 w-3 text-zinc-600" />
-                  <span className="font-mono text-[9px] uppercase tracking-[0.13em] text-zinc-600">
-                    {unavailable
-                      ? "Ledger connection pending"
-                      : "Awaiting first confirmed report"}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -bottom-7 right-2 select-none font-display text-[90px] font-black leading-none tracking-[-0.08em] text-white/[0.024]"
-            >
-              837
-            </div>
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-line pt-3 font-mono text-[7px] uppercase tracking-[0.14em] text-ash sm:text-[8px]">
+            <span>
+              <span className="text-blood-300">Data</span> / community reports
+            </span>
+            <span>
+              <span className="text-blood-300">Scope</span> / Server {SITE.server} only
+            </span>
+            <span>
+              <span className="text-blood-300">Ruleset</span> / 03 active
+            </span>
+            <span>
+              <span className="text-blood-300">Dedupe</span> / minute-level
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="mt-10 flex flex-wrap items-center justify-between gap-x-5 gap-y-2 border-y border-white/[0.075] py-3 font-mono text-[8px] uppercase tracking-[0.16em] text-zinc-600 sm:mt-12">
+      <div className="relative z-20 -mt-4 grid grid-cols-2 gap-2.5 px-2 sm:-mt-5 sm:px-4 lg:grid-cols-4">
+        <KpiCard
+          label="Confirmed violations"
+          value={formatCount(data.stats.violationCount, unavailable)}
+          hint="All-time Server 837 hits"
+          valueClassName="kpi-value text-[30px] sm:text-[34px]"
+        />
+        <KpiCard
+          label="Ranked alliances"
+          value={formatCount(data.stats.allianceCount, unavailable)}
+          hint="Alliances with scored hits"
+          valueClassName="kpi-value text-[30px] sm:text-[34px]"
+        />
+        <KpiCard
+          label="Latest offender"
+          value={latestValue}
+          hint={latestHint}
+          valueClassName="text-[19px] text-bone sm:text-[23px]"
+        />
+        <KpiCard
+          label="Enforcement"
+          value={unavailable ? "SYNC" : "LIVE"}
+          hint={unavailable ? "Public ledger reconnecting" : "Ruleset 03 · UTC timestamps"}
+          valueClassName="kpi-value text-[24px] sm:text-[28px]"
+        />
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-x-5 gap-y-2 border-y border-line py-3 font-mono text-[7px] uppercase tracking-[0.16em] text-zinc-600 sm:text-[8px]">
         <span>Protocol / bounty · resource tile · trade truck</span>
-        <span className="hidden sm:inline">Attacker extraction / VS right or log attacker</span>
+        <span className="hidden sm:inline">
+          Attacker extraction / VS right or log attacker
+        </span>
         <span>Cross-server / exempt</span>
       </div>
     </section>
@@ -258,13 +249,13 @@ function Hero({ data }: HeroProps) {
 function AvailabilityNotice({ unavailable }: { unavailable: boolean }) {
   if (!unavailable) return null;
   return (
-    <div className="mt-5 flex items-start gap-3 rounded-sm border border-signal-amber/20 bg-signal-amber/[0.045] px-4 py-3">
+    <div className="mt-5 flex items-start gap-3 border border-blood/30 bg-blood/[0.05] px-4 py-3">
       <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-signal-amber" />
       <div>
         <p className="text-[12px] font-medium text-signal-amber">
           Leaderboard feed unavailable
         </p>
-        <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">
+        <p className="mt-1 text-[11px] leading-relaxed text-ash">
           The public ledger is syncing. Rankings and evidence will appear
           automatically when the data channel is restored.
         </p>
@@ -275,15 +266,19 @@ function AvailabilityNotice({ unavailable }: { unavailable: boolean }) {
 
 function Footer({ onAdminClick }: { onAdminClick: () => void }) {
   return (
-    <footer className="mt-20 border-t border-white/[0.08] bg-black/20">
+    <footer className="mt-14 border-t border-line-strong bg-[#0b0606]/80">
+      <div
+        aria-hidden="true"
+        className="h-[2px] w-full bg-gradient-to-r from-transparent via-blood/70 to-transparent"
+      />
       <div className="mx-auto w-full max-w-[1180px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-sm border border-white/10 bg-white/[0.03]">
+              <span className="flex h-7 w-7 items-center justify-center border border-line-strong bg-black/30">
                 <Crosshair className="h-3.5 w-3.5 text-acid" />
               </span>
-              <span className="font-display text-[13px] font-bold uppercase tracking-[0.14em] text-zinc-200">
+              <span className="font-display text-[13px] font-bold uppercase tracking-[0.14em] text-bone">
                 NAP<span className="text-acid">//</span>837
               </span>
             </div>
@@ -300,23 +295,23 @@ function Footer({ onAdminClick }: { onAdminClick: () => void }) {
               <div className="font-mono text-[8px] uppercase tracking-[0.16em] text-zinc-700">
                 Detection stack
               </div>
-              <div className="mt-1 text-[10px] text-zinc-500">
+              <div className="mt-1 text-[10px] text-ash">
                 AI Vision + Rule Engine
               </div>
             </div>
-            <span className="flex h-9 w-9 items-center justify-center rounded-sm border border-acid/20 bg-acid/[0.04]">
+            <span className="flex h-9 w-9 items-center justify-center border border-acid/20 bg-acid/[0.04]">
               <ShieldCheck className="h-4 w-4 text-acid/80" />
             </span>
           </div>
         </div>
-        <div className="mt-7 flex flex-col justify-between gap-2 border-t border-white/[0.06] pt-4 font-mono text-[8px] uppercase tracking-[0.14em] text-zinc-700 sm:flex-row sm:items-center">
+        <div className="mt-7 flex flex-col justify-between gap-2 border-t border-line pt-4 font-mono text-[8px] uppercase tracking-[0.14em] text-zinc-700 sm:flex-row sm:items-center">
           <span>Built for the 837 community · Not affiliated with the game publisher</span>
           <div className="flex flex-wrap items-center gap-3">
             <span>UTC timestamps · Unique evidence ledger</span>
             <button
               type="button"
               onClick={onAdminClick}
-              className="inline-flex items-center gap-1.5 border-l border-white/10 pl-3 text-zinc-600 transition-colors hover:text-acid"
+              className="inline-flex items-center gap-1.5 border-l border-line-strong pl-3 text-zinc-600 transition-colors hover:text-acid-300"
             >
               <LockKeyhole className="h-3 w-3" />
               Admin
@@ -332,7 +327,7 @@ function LoadingDashboard() {
   return (
     <div
       id="top"
-      className="relative min-h-screen overflow-x-clip bg-void-950 text-zinc-200"
+      className="relative min-h-screen overflow-x-clip bg-transparent text-zinc-200"
     >
       <BackgroundEffects />
       <div className="relative z-10">
@@ -382,7 +377,7 @@ export function Dashboard() {
   return (
     <div
       id="top"
-      className="relative min-h-screen overflow-x-clip bg-void-950 text-zinc-200"
+      className="relative min-h-screen overflow-x-clip bg-transparent text-zinc-200"
     >
       <BackgroundEffects />
       <div className="relative z-10">

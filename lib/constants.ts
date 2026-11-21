@@ -4,7 +4,7 @@ export const SITE = {
   name: "NAP WATCH",
   game: "LAST Z: SURVIVAL SHOOTER",
   server: "837",
-  tagline: "Server 837 NAP violation radar",
+  tagline: "Server 837 NAP war report",
 } as const;
 
 export const HOME_SERVER_ID = "837";
