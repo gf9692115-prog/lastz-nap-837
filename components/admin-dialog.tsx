@@ -58,7 +58,12 @@ async function callAdmin(
       // Gateway errors do not always return JSON.
     }
 
-    if (payload && typeof payload.message === "string") return payload;
+    if (
+      payload &&
+      (typeof payload.ok === "boolean" || typeof payload.message === "string")
+    ) {
+      return payload;
+    }
 
     return {
       ok: false,
