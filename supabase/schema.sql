@@ -112,6 +112,12 @@ create policy "Public can read confirmed violations"
 revoke all on table public.violations from anon, authenticated;
 grant select on table public.violations to anon, authenticated;
 
+-- service_role bypasses RLS, but it still needs SQL privileges on the table.
+-- The Edge Function upload-report uses this role for inserts and audits.
+grant select, insert, update, delete
+  on table public.violations
+  to service_role;
+
 revoke all on table public.alliance_leaderboard from anon, authenticated;
 grant select on table public.alliance_leaderboard to anon, authenticated;
 
