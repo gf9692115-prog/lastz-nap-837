@@ -101,7 +101,7 @@ function KpiCard({
     <div className="relative h-full overflow-hidden border border-line-strong bg-[linear-gradient(180deg,#1d1211_0%,#130b0a_100%)] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.04),0_10px_26px_rgba(0,0,0,.55)]">
       <span className="absolute inset-y-0 left-0 w-[3px] bg-gradient-to-b from-blood to-blood-600" />
       <span className="absolute -right-7 -top-10 h-24 w-24 rounded-full bg-blood/20 blur-2xl" />
-      <div className="relative font-sans text-[8px] font-bold uppercase tracking-[0.18em] text-[#c08078]">
+      <div className="relative font-sans text-[9px] font-bold uppercase tracking-[0.18em] text-[#c08078]">
         {label}
       </div>
       <div
@@ -225,7 +225,7 @@ function Hero({ data }: HeroProps) {
           label="Latest offender"
           value={latestValue}
           hint={latestHint}
-          valueClassName="text-[19px] text-bone sm:text-[23px]"
+          valueClassName="text-[19px] text-acid-300 sm:text-[23px]"
         />
         <KpiCard
           label="Enforcement"
