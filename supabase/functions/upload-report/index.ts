@@ -104,20 +104,26 @@ Deno.serve(async (request: Request): Promise<Response> => {
   const deepseekApiKey = Deno.env.get("DEEPSEEK_API_KEY")?.trim();
 
   if (!supabaseUrl || !serviceRoleKey || !deepseekApiKey) {
+    const missingConfig = [
+      !supabaseUrl ? "SUPABASE_URL" : "",
+      !serviceRoleKey ? "service_role_key" : "",
+      !deepseekApiKey ? "DEEPSEEK_API_KEY" : "",
+    ].filter(Boolean);
+
     console.error(
       "[upload-report] missing configuration:",
-      [
-        !supabaseUrl ? "SUPABASE_URL" : "",
-        !serviceRoleKey ? "service role key" : "",
-        !deepseekApiKey ? "DEEPSEEK_API_KEY" : "",
-      ]
-        .filter(Boolean)
-        .join(", "),
+      missingConfig.join(", "),
     );
-    return failure(
-      "CONFIGURATION_ERROR",
-      "服务尚未完成配置，请联系管理员",
-      503,
+
+    return Response.json(
+      {
+        ok: false,
+        code: "CONFIGURATION_ERROR",
+        message: "服务尚未完成配置，请联系管理员",
+        // Environment variable names only; never the values.
+        missing_config: missingConfig,
+      },
+      { status: 503, headers: NO_STORE_HEADERS },
     );
   }
 
