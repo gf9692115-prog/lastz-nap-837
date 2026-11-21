@@ -118,10 +118,11 @@ GitHub Pages (static HTML/JS/CSS)
 | `DEEPSEEK_BASE_URL` | 否 | 默认 `https://api.deepseek.com` |
 | `DEEPSEEK_MODEL` | 否 | 默认 `deepseek-flash`，必须支持视觉 |
 | `SUPABASE_REPORTS_BUCKET` | 否 | 默认 `reports` |
+| `ADMIN_DELETE_TOKEN` | 使用管理面板时必填 | 管理员删除口令，至少 16 字符；建议使用 32 位以上随机字符串。只存在服务端，不能写进 `NEXT_PUBLIC_*` |
 
 `SUPABASE_URL`、`SUPABASE_SECRET_KEYS`（或 legacy service-role key）由 Supabase 注入，不需要手动写进浏览器变量。
 
-### 3. 部署上传函数
+### 3. 部署 Edge Functions
 
 任选一种：
 
@@ -131,6 +132,7 @@ GitHub Pages (static HTML/JS/CSS)
 npx supabase login
 npx supabase link --project-ref <your-project-ref>
 npx supabase functions deploy upload-report --no-verify-jwt
+npx supabase functions deploy admin-reports --no-verify-jwt
 ```
 
 **GitHub Actions（推荐）**
@@ -140,12 +142,13 @@ npx supabase functions deploy upload-report --no-verify-jwt
 - Repository variable `SUPABASE_PROJECT_REF`
 - Repository secret `SUPABASE_ACCESS_TOKEN`
 
-然后手动运行 **Deploy Supabase Upload Function** workflow。
+然后手动运行 **Deploy Supabase Upload Function** workflow。该 workflow 会同时部署上传函数和管理函数。
 
 函数地址为：
 
 ```text
 https://<project-ref>.supabase.co/functions/v1/upload-report
+https://<project-ref>.supabase.co/functions/v1/admin-reports
 ```
 
 前端未显式配置 `NEXT_PUBLIC_UPLOAD_FUNCTION_URL` 时会自动推导出这个地址。
@@ -275,10 +278,28 @@ pnpm build       # 静态导出
 
 浏览器上传前会压缩到最长边 2200px 的 JPEG；最终只发送 JPG / PNG / WebP，手机 HEIC/HEIF 会先尝试转 JPEG。
 
+## 管理员删除
+
+1. 在 Supabase **Edge Functions → Secrets** 添加 `ADMIN_DELETE_TOKEN`，值使用 32 位以上随机字符串。
+2. 打开网站，点击证据区标题旁的 **Admin** 或页脚 **Admin**。
+3. 输入同一个口令。口令只在当前标签页内存中保存，不写入 localStorage / cookie。
+4. 管理面板会列出所有记录（包括不公开的外服审计记录）。点击 **Delete** 并确认后，服务端会删除记录行、证据图片，并让联盟排行榜自动重算。
+
+管理接口：
+
+```text
+POST https://<project-ref>.supabase.co/functions/v1/admin-reports
+Header: x-admin-token: <ADMIN_DELETE_TOKEN>
+Body:   {"action":"list"}
+        {"action":"delete","id":"<record-uuid>"}
+```
+
+安全说明：这是**单一共享管理员口令**，不是多账号系统；任何拿到口令的人都能删除记录。接口有 300ms 失败延迟、限制允许的站点 Origin，但不做分布式暴力破解限流，因此口令必须足够长。轮换口令只需更新 Supabase Secret，网页端无需重新构建。
+
 ## 设计边界
 
-- **公开匿名上传**：函数 `verify_jwt=false` 且未做登录/频率限制。公开站点上线前强烈建议增加 Cloudflare Turnstile、访问口令或按 IP/用户的限流；否则 DeepSeek 和 Storage 费用可能被滥用。
-- **AI 仍可能误读**：低置信度/字段不全会拒绝入库，但自动判定仍建议由联盟管理抽查。误判时可直接删除 Supabase 中对应行和 Storage 对象。
+- **公开匿名上传**：函数 `verify_jwt=false` 且未做登录/频率限制。公开站点上线前强烈建议增加 Cloudflare Turnstile、访问口令或按 IP/用户的限流；否则 DeepSeek 和 Storage 费用可能被滥用。管理删除函数同样 `verify_jwt=false`，但必须携带服务端口令，不能匿名调用。
+- **AI 仍可能误读**：低置信度/字段不全会拒绝入库，但自动判定仍建议由联盟管理抽查。误判时可通过站点管理面板同时删除记录、证据图片和榜单计数，也可直接在 Supabase 中删除对应行和 Storage 对象。
 - **时间为游戏界面显示值**：截图不带时区，本实现按业务要求将其视为 UTC。如果游戏实际时区不同，需要同时调整 `_shared/rules.ts` 的归一化和前端展示。
 - **分钟级去重**：同一联盟、玩家、类型在同一分钟的重复战报会判为重复；唯一索引字段与产品要求一致。
 - **外服记录可见性**：外服行不会进入公共 Data API 查询；公开 bucket 的截图对象仍可能在知道随机路径时被访问，不要把它当隐私存储。

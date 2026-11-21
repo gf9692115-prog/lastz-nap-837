@@ -123,3 +123,24 @@ export interface UploadApiResponse {
   message: string;
   record?: UploadResponseRecord;
 }
+
+export interface AdminRecord {
+  id: string;
+  createdAt: string;
+  reportType: ReportType;
+  offendingAlliance: string;
+  offendingPlayer: string;
+  offendingServer: string;
+  victimPlayer: string | null;
+  battleTimestamp: string;
+  isViolation: boolean;
+  imageUrl: string | null;
+}
+
+export interface AdminApiResponse {
+  ok: boolean;
+  code?: string;
+  message?: string;
+  records?: AdminRecord[];
+  deletedId?: string;
+}

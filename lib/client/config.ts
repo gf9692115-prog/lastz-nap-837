@@ -2,6 +2,7 @@ export interface PublicSupabaseConfig {
   url: string;
   key: string;
   uploadUrl: string;
+  adminUrl: string;
 }
 
 export function getPublicSupabaseConfig(): PublicSupabaseConfig {
@@ -21,6 +22,7 @@ export function getPublicSupabaseConfig(): PublicSupabaseConfig {
   const uploadUrl =
     configuredUploadUrl ||
     (url ? `${url}/functions/v1/upload-report` : "");
+  const adminUrl = url ? `${url}/functions/v1/admin-reports` : "";
 
-  return { url, key, uploadUrl };
+  return { url, key, uploadUrl, adminUrl };
 }

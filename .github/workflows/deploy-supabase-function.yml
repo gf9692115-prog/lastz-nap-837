@@ -50,3 +50,10 @@ jobs:
             --remote="$PROJECT_REF" \
             --no-verify-jwt \
             --yes
+
+      - name: Deploy admin-reports
+        run: |
+          supabase functions deploy admin-reports \
+            --remote="$PROJECT_REF" \
+            --no-verify-jwt \
+            --yes

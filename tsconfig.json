@@ -27,6 +27,7 @@
   "exclude": [
     "node_modules",
     "supabase/functions/upload-report",
+    "supabase/functions/admin-reports",
     "supabase/functions/.env"
   ]
 }

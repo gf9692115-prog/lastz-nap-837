@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   Crosshair,
   LoaderCircle,
+  LockKeyhole,
   Radio,
   ShieldCheck,
   Sparkles,
@@ -22,6 +23,7 @@ import {
 } from "@/lib/format";
 import type { DashboardData } from "@/lib/types";
 
+import { AdminDialog } from "./admin-dialog";
 import { Leaderboard } from "./leaderboard";
 import { ReportFeed } from "./report-feed";
 import { SiteHeader } from "./site-header";
@@ -271,7 +273,7 @@ function AvailabilityNotice({ unavailable }: { unavailable: boolean }) {
   );
 }
 
-function Footer() {
+function Footer({ onAdminClick }: { onAdminClick: () => void }) {
   return (
     <footer className="mt-20 border-t border-white/[0.08] bg-black/20">
       <div className="mx-auto w-full max-w-[1180px] px-4 py-8 sm:px-6 lg:px-8">
@@ -309,7 +311,17 @@ function Footer() {
         </div>
         <div className="mt-7 flex flex-col justify-between gap-2 border-t border-white/[0.06] pt-4 font-mono text-[8px] uppercase tracking-[0.14em] text-zinc-700 sm:flex-row sm:items-center">
           <span>Built for the 837 community · Not affiliated with the game publisher</span>
-          <span>UTC timestamps · Unique evidence ledger</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <span>UTC timestamps · Unique evidence ledger</span>
+            <button
+              type="button"
+              onClick={onAdminClick}
+              className="inline-flex items-center gap-1.5 border-l border-white/10 pl-3 text-zinc-600 transition-colors hover:text-acid"
+            >
+              <LockKeyhole className="h-3 w-3" />
+              Admin
+            </button>
+          </div>
         </div>
       </div>
     </footer>
@@ -352,6 +364,7 @@ function LoadingDashboard() {
 
 export function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [adminOpen, setAdminOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     const nextData = await getDashboardData();
@@ -389,10 +402,17 @@ export function Dashboard() {
           <ReportFeed
             reports={data.latestViolations}
             unavailable={data.dataUnavailable}
+            onAdminClick={() => setAdminOpen(true)}
           />
         </main>
-        <Footer />
+        <Footer onAdminClick={() => setAdminOpen(true)} />
       </div>
+      {adminOpen ? (
+        <AdminDialog
+          onClose={() => setAdminOpen(false)}
+          onRecordsChanged={loadData}
+        />
+      ) : null}
     </div>
   );
 }

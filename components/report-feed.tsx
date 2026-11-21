@@ -5,6 +5,7 @@ import {
   CalendarClock,
   Coins,
   Gem,
+  LockKeyhole,
   Maximize2,
   Newspaper,
   ScanSearch,
@@ -30,6 +31,7 @@ import { SectionHeading } from "./section-heading";
 interface ReportFeedProps {
   reports: ViolationRecord[];
   unavailable: boolean;
+  onAdminClick: () => void;
 }
 
 interface TypeStyle {
@@ -183,7 +185,11 @@ function ReportCard({
   );
 }
 
-export function ReportFeed({ reports, unavailable }: ReportFeedProps) {
+export function ReportFeed({
+  reports,
+  unavailable,
+  onAdminClick,
+}: ReportFeedProps) {
   const [selected, setSelected] = useState<ViolationRecord | null>(null);
   const closeModal = useCallback(() => setSelected(null), []);
 
@@ -195,9 +201,19 @@ export function ReportFeed({ reports, unavailable }: ReportFeedProps) {
         title="Latest confirmed reports"
         description="Every record includes its original screenshot. Open any card to inspect the evidence and the assessment."
         action={
-          <div className="inline-flex items-center gap-2 rounded-sm border border-white/10 bg-white/[0.025] px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-zinc-500">
-            <Newspaper className="h-3.5 w-3.5 text-acid/80" />
-            All times shown in UTC
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-2 rounded-sm border border-white/10 bg-white/[0.025] px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-zinc-500">
+              <Newspaper className="h-3.5 w-3.5 text-acid/80" />
+              All times shown in UTC
+            </div>
+            <button
+              type="button"
+              onClick={onAdminClick}
+              className="inline-flex items-center gap-2 rounded-sm border border-white/10 bg-white/[0.025] px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-zinc-500 transition-colors hover:border-white/25 hover:text-white"
+            >
+              <LockKeyhole className="h-3.5 w-3.5" />
+              Admin
+            </button>
           </div>
         }
       />
