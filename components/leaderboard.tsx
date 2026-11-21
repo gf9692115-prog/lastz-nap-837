@@ -57,8 +57,8 @@ export function Leaderboard({
                 Confirmed
               </div>
               <div className="mt-0.5 font-display text-lg font-bold leading-none text-white">
-                {String(stats.violationCount).padStart(2, "0")}
-                <span className="ml-1 font-sans text-[10px] font-normal text-zinc-500">
+                {String(stats.violationCount).padStart(2, "0")}{" "}
+                <span className="font-sans text-[10px] font-normal text-zinc-500">
                   hits
                 </span>
               </div>
@@ -69,8 +69,8 @@ export function Leaderboard({
                 Alliances
               </div>
               <div className="mt-0.5 font-display text-lg font-bold leading-none text-white">
-                {String(stats.allianceCount).padStart(2, "0")}
-                <span className="ml-1 font-sans text-[10px] font-normal text-zinc-500">
+                {String(stats.allianceCount).padStart(2, "0")}{" "}
+                <span className="font-sans text-[10px] font-normal text-zinc-500">
                   alliances
                 </span>
               </div>

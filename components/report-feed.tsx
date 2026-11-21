@@ -233,7 +233,8 @@ export function ReportFeed({ reports, unavailable }: ReportFeedProps) {
             ))}
           </div>
           <p className="mt-3 text-right font-mono text-[9px] uppercase tracking-[0.12em] text-zinc-600">
-            Showing latest {reports.length} confirmed records
+            Showing latest {reports.length} confirmed{" "}
+            {reports.length === 1 ? "record" : "records"}
           </p>
         </>
       )}
