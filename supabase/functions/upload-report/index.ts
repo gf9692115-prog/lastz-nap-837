@@ -300,6 +300,14 @@ Deno.serve(async (request: Request): Promise<Response> => {
                   message: insertError.message,
                   details: insertError.details,
                   hint: insertError.hint,
+                  decision: {
+                    reportType: decision.reportType,
+                    offendingAlliance: decision.offendingAlliance,
+                    offendingPlayer: decision.offendingPlayer,
+                    offendingServer: decision.offendingServer,
+                    battleTimestamp: decision.battleTimestamp,
+                    isViolation: decision.isViolation,
+                  },
                 },
               }
             : {}),

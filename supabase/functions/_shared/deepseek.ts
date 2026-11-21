@@ -58,19 +58,32 @@ Tag/cue near the top-left includes: Chinese "矿区争夺", English "Resource Ti
 The header may say "战斗报告", "邮件", "Mail", "Battle Report", or a localized equivalent.
 Usually there is also a subtitle such as "与[Gty]iCU4U战斗失败". The subtitle may omit or truncate the alliance, so it is corroboration only; do not use it as the authoritative player field.
 
-### 3) TRUCK_PLUNDER — Trade truck plunder
+### 3) TRUCK_PLUNDER — Trade truck plunder (VS layout)
 Layout: a left-vs-right VS battle result screen (large "VS" in the middle).
 Tag/cue near the top-left includes: Chinese "贸易货车", English "Trade Truck", Turkish "Ticaret Kamyonu", Russian "Торговый грузовик", Arabic "شاحنة التجارة", and equivalents.
 The header may say "邮件", "Mail", "Battle Report", or a localized equivalent.
 The subtitle is often "与#838 ...战斗失败" or "与RAKK战斗失败". The subtitle may omit or truncate the alliance, so again it is corroboration only.
 
+### 3B) TRUCK_PLUNDER — Trade-guard defense-log layout (same report type)
+Some players upload a "Details" screen instead of the VS panel. Cues:
+- Title: Chinese "详情", Turkish "Detaylar", English "Details", or localized equivalent.
+- Sections: Chinese "贸易卫队" / "战斗记录" / "防守失败" / "掠夺资源"; Turkish "Ticaret Muhafızları" / "Savaş günlüğü" / "Savunma Başarısızlığı" / "Yağmalanan Kaynaklar"; English "Trade Guards" / "Battle Log" / "Defense Failed" / "Plundered Resources"; equivalents in other languages.
+- A trade-truck artwork and a hero lineup may also be visible.
+In this defense-log layout:
+- The player label INSIDE a battle-log row is the active ATTACKER, not the uploader or the guard hero lineup.
+- Put that attacker into rightPlayer, set reportType to TRUCK_PLUNDER, and leave leftPlayer empty. There is no VS left side in this layout.
+- If several battle-log rows are visible, select the row with the LATEST timestamp and use that row's player and time.
+- IGNORE every floating top alert, system notification, countdown, chat banner, header message, and unrelated player name. In particular, a "#838 ..." alert at the top may belong to a different event and must NEVER replace the player from the battle-log row. The battle-log row is the only authoritative source for this variant.
+Example: if the latest visible row says "2026-11-21 00:56:40 / Savunma Başarısızlığı / [VOiD]okay pro", then rightPlayer is [VOiD]okay pro and battleTimeRaw is "2026-11-21 00:56:40", even if a top alert mentions a different #838 player.
+
 ## ABSOLUTE LEFT/RIGHT RULE (CRITICAL)
-On RESOURCE_TILE and TRUCK_PLUNDER screens:
+On RESOURCE_TILE and VS-layout TRUCK_PLUNDER screens:
 - The LEFT player is ALWAYS the uploader / victim / defender. This is the person whose mail/report is open.
 - The RIGHT player is ALWAYS the opponent / active attacker / plunderer. This is the offender candidate.
 - Never reverse these. Do not infer the sides from who won, who has a WIN badge, the subtitle, or the story text.
 - If a local player [.0Lz]Potit Rove is visible on the left and an opponent [Gty]iCU4U on the right, leftPlayer is [.0Lz]Potit Rove and rightPlayer is [Gty]iCU4U. Do not return leftPlayer as the attacker.
 - If the right slot is unreadable, return an empty rightPlayer rather than substituting the left player. Do not swap sides.
+- For the 3B defense-log layout there is no VS left side; use the battle-log attacker as described above. Do not take a player from the top alerts.
 
 ## PLAYER LABEL PARSING
 Player labels look like these real examples:
@@ -117,7 +130,7 @@ Example of a complete valid JSON response for a trade-truck report:
   "notes": "Trade Truck tag visible; right-side attacker."
 }
 
-Do not determine NAP guilt. The backend will use only bountyOffender for bounty screens and only rightPlayer for VS screens.`;
+Do not determine NAP guilt. The backend will use only bountyOffender for bounty screens and only rightPlayer for VS screens and the 3B defense-log layout.`;
 }
 
 function parseModelJson(text: string): unknown {

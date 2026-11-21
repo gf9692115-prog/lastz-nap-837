@@ -37,8 +37,9 @@ export function UploadSection({ onUploaded }: UploadSectionProps) {
               Recognition protocol
             </div>
             <p className="mt-3 max-w-md text-[13px] leading-7 text-zinc-300">
-              系统只把<span className="text-white">右侧进攻方</span>
-              或<span className="text-white">赏金卡片中的掠夺者</span>
+              系统会取<span className="text-white">VS 右侧进攻方</span>、
+              <span className="text-white">赏金卡片中的掠夺者</span>
+              或<span className="text-white">货车详情日志中的攻击者</span>
               作为嫌疑对象。左侧上传者永远不计分。
             </p>
 

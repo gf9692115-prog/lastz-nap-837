@@ -53,7 +53,7 @@ export const REPORT_TYPE_LABELS: Record<
   TRUCK_PLUNDER: {
     label: "贸易货车",
     fullLabel: "贸易货车掠夺战报",
-    shortHint: "VS 战报 · 只看右侧劫车方",
+    shortHint: "VS 右侧劫车方 / 详情日志攻击者",
   },
 };
 
@@ -71,6 +71,7 @@ export const NAP_RULES = [
   {
     index: "03",
     title: "贸易货车",
-    detail: "右侧劫车方带 #外服 标签不计；本服或无标签计违规。",
+    detail:
+      "VS 右侧劫车方，或货车详情「战斗记录」里的进攻玩家；外服不计。",
   },
 ] as const;
