@@ -279,7 +279,7 @@ function buildReason(
         ? "赏金任务记录中的掠夺者"
         : reportType === "RESOURCE_TILE"
           ? "矿区争夺战报右侧进攻方"
-          : "贸易货车战报右侧劫车方";
+          : "贸易货车战报中的劫车方";
 
     const rule =
       reportType === "RESOURCE_TILE"
@@ -304,14 +304,16 @@ function buildReason(
     return `矿区争夺战报右侧进攻方来自 ${serverLabel} 外服，不计入 837 服 NAP 违规。`;
   }
 
-  return `贸易货车战报右侧劫车方来自 ${serverLabel} 外服，属于正常跨服掠夺，不计入 837 服 NAP 违规。`;
+  return `贸易货车战报中的劫车方来自 ${serverLabel} 外服，属于正常跨服掠夺，不计入 837 服 NAP 违规。`;
 }
 
 /**
  * Apply Server 837 NAP rules to one model extraction.
  *
  * Critical anti-reversal rule: in VS reports the LEFT player is always the
- * uploader / victim. Only `rightPlayer` may become the offender. Bounty records
+ * uploader / victim. Only `rightPlayer` may become the offender; for the
+ * trade-truck defense-log layout, `rightPlayer` carries the battle-log
+ * attacker. Bounty records
  * use `bountyOffender` and never either VS side.
  */
 export function evaluateExtraction(

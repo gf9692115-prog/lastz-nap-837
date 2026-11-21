@@ -109,7 +109,7 @@ function Hero({ data }: HeroProps) {
           <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2.5">
             {[
               "多语言战报识别",
-              "右侧进攻方取证",
+              "右侧 / 日志攻击者取证",
               "外服行为豁免",
               "分钟级去重防刷",
             ].map((feature) => (
@@ -246,7 +246,7 @@ function Hero({ data }: HeroProps) {
 
       <div className="mt-10 flex flex-wrap items-center justify-between gap-x-5 gap-y-2 border-y border-white/[0.075] py-3 font-mono text-[8px] uppercase tracking-[0.16em] text-zinc-600 sm:mt-12">
         <span>Protocol / bounty · resource tile · trade truck</span>
-        <span className="hidden sm:inline">Attacker extraction / right side only</span>
+        <span className="hidden sm:inline">Attacker extraction / VS right or log attacker</span>
         <span>Cross-server / exempt</span>
       </div>
     </section>

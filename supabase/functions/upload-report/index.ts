@@ -104,26 +104,22 @@ Deno.serve(async (request: Request): Promise<Response> => {
   const deepseekApiKey = Deno.env.get("DEEPSEEK_API_KEY")?.trim();
 
   if (!supabaseUrl || !serviceRoleKey || !deepseekApiKey) {
-    const missingConfig = [
-      !supabaseUrl ? "SUPABASE_URL" : "",
-      !serviceRoleKey ? "service_role_key" : "",
-      !deepseekApiKey ? "DEEPSEEK_API_KEY" : "",
-    ].filter(Boolean);
-
+    // Log names only; never log secret values.
     console.error(
       "[upload-report] missing configuration:",
-      missingConfig.join(", "),
+      [
+        !supabaseUrl ? "SUPABASE_URL" : "",
+        !serviceRoleKey ? "service_role_key" : "",
+        !deepseekApiKey ? "DEEPSEEK_API_KEY" : "",
+      ]
+        .filter(Boolean)
+        .join(", "),
     );
 
-    return Response.json(
-      {
-        ok: false,
-        code: "CONFIGURATION_ERROR",
-        message: "服务尚未完成配置，请联系管理员",
-        // Environment variable names only; never the values.
-        missing_config: missingConfig,
-      },
-      { status: 503, headers: NO_STORE_HEADERS },
+    return failure(
+      "CONFIGURATION_ERROR",
+      "服务尚未完成配置，请联系管理员",
+      503,
     );
   }
 
@@ -285,35 +281,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
       }
 
       console.error("[upload-report] database insert failed:", insertError.message);
-      const includeDebug =
-        new URL(request.url).searchParams.get("debug") === "1";
-
-      return Response.json(
-        {
-          ok: false,
-          code: "DATABASE_ERROR",
-          message: "战报保存失败，请稍后重试",
-          ...(includeDebug
-            ? {
-                debug: {
-                  code: insertError.code,
-                  message: insertError.message,
-                  details: insertError.details,
-                  hint: insertError.hint,
-                  decision: {
-                    reportType: decision.reportType,
-                    offendingAlliance: decision.offendingAlliance,
-                    offendingPlayer: decision.offendingPlayer,
-                    offendingServer: decision.offendingServer,
-                    battleTimestamp: decision.battleTimestamp,
-                    isViolation: decision.isViolation,
-                  },
-                },
-              }
-            : {}),
-        },
-        { status: 500, headers: NO_STORE_HEADERS },
-      );
+      return failure("DATABASE_ERROR", "战报保存失败，请稍后重试", 500);
     }
 
     uploadedPath = null;
