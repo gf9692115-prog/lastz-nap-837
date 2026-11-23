@@ -13,6 +13,7 @@ import {
   DeepSeekAnalysisError,
   DeepSeekConfigurationError,
 } from "../_shared/deepseek.ts";
+import { isLikelySamePlayer } from "../_shared/dedupe.ts";
 import {
   detectSupportedImageMime,
   extensionForMime,
@@ -73,6 +74,36 @@ function getServiceRoleKey(): string {
 
   // Backward compatibility for projects still using legacy service_role keys.
   return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
+}
+
+async function bountyAlreadyRecorded(
+  supabase: SupabaseClient,
+  decision: ViolationDecision,
+): Promise<boolean> {
+  if (decision.reportType !== "BOUNTY_PLUNDER") return false;
+
+  const { data, error } = await supabase
+    .from("violations")
+    .select("offending_player")
+    .eq("report_type", "BOUNTY_PLUNDER")
+    .eq("offending_alliance", decision.offendingAlliance)
+    .eq("battle_timestamp", decision.battleTimestamp)
+    .limit(10);
+
+  if (error) {
+    console.error(
+      "[upload-report] bounty duplicate check failed:",
+      error.message,
+    );
+    return false;
+  }
+
+  return ((data ?? []) as Record<string, unknown>[]).some((row) =>
+    isLikelySamePlayer(
+      String(row.offending_player ?? ""),
+      decision.offendingPlayer,
+    ),
+  );
 }
 
 async function removeEvidence(
@@ -270,6 +301,11 @@ Deno.serve(async (request: Request): Promise<Response> => {
     let databaseFailureCount = 0;
 
     for (const decision of decisions) {
+      if (await bountyAlreadyRecorded(supabase, decision)) {
+        duplicateCount += 1;
+        continue;
+      }
+
       const record: UploadResponseRecord = {
         reportType: decision.reportType,
         offendingAlliance: decision.offendingAlliance,

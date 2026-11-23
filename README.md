@@ -39,7 +39,7 @@ GitHub Pages (static HTML/JS/CSS)
 | `TRUCK_PLUNDER` | 贸易货车 / Trade Truck 的左右 VS 战报，或详情/防守日志（Ticaret Muhafızları / Savaş günlüğü） | VS 右侧玩家，或战斗日志行中的进攻玩家 | 该攻击者属于 837 |
 
 1. 左侧上传者永远是受害者，**永不作为违规方**。VS 类型只读取 `rightPlayer`。
-2. 赏金类型读取每条完整任务记录行里的掠夺者，不读任一 VS 侧；同一张列表截图可以生成多条记录。
+2. 赏金类型读取每条完整任务记录行里的掠夺者，不读任一 VS 侧；同一张列表截图可以生成多条记录。对同一联盟、同一分钟的赏金行会再做一次 OCR 近似名判断（像素字体的 b/d/v 误读），避免同一行因换一张图重传而重复计分。
 3. 贸易货车“详情”界面中，只读取「战斗记录 / Savaş günlüğü」行里的进攻玩家，并选取最新时间的一条；顶部弹窗、系统通知和其他玩家名字一律忽略，避免把别的 #838 通知误当成这次进攻。
 4. 违规方名字前的 `#XXX` 决定服务器；无前缀或明确 `#837` 视为 837 本服。
 5. 若原始名字完全没有外服号，但模型声称看到了外服号，系统只在“外服”方向接受兜底，只会少计，不会误把外服算成本服。
@@ -230,14 +230,14 @@ pnpm start
 ## 四、测试
 
 ```bash
-pnpm test        # 28 个测试
+pnpm test        # 31 个测试
 pnpm typecheck   # TypeScript（Edge entry 由 Supabase 部署时校验）
 pnpm build       # 静态导出
 ```
 
 `tests/rules.test.ts` 覆盖真实战报的关键路径：赏金本服/外服、赏金列表多行批量判定、矿区防算反、货车 `#838` 豁免、`[d00m]RAKK` 本服计分、特殊字符和 UTC 时间。
 
-`tests/deepseek.test.ts` 用 mock fetch 验证：多模态 `image_url`、JSON Output、`thinking=disabled`、HEIC 拒绝、空/非法 JSON 和上游 HTTP 错误；不需要真实 API key。`tests/image.test.ts` 覆盖 JPEG/PNG/WebP 签名和 HEIC 拒绝。
+`tests/deepseek.test.ts` 用 mock fetch 验证：多模态 `image_url`、JSON Output、`thinking=disabled`、HEIC 拒绝、空/非法 JSON 和上游 HTTP 错误；不需要真实 API key。`tests/image.test.ts` 覆盖 JPEG/PNG/WebP 签名和 HEIC 拒绝。`tests/dedupe.test.ts` 覆盖赏金像素字 OCR 近似名的防重复判断。
 
 ## 上传 API（Supabase Edge Function）
 
