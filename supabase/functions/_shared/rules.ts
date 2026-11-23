@@ -5,9 +5,11 @@ import {
   UNKNOWN_ALLIANCE,
 } from "./constants.ts";
 import type {
+  BountyRuleEvaluation,
   NormalizedPlayer,
   ReportType,
   RuleEvaluation,
+  ViolationDecision,
 } from "./types.ts";
 
 export const UNSUPPORTED_REPORT_MESSAGE =
@@ -386,4 +388,116 @@ export function evaluateExtraction(
       notes,
     },
   };
+}
+
+/**
+ * Bounty mission screens are lists rather than a single VS card. Extract and
+ * evaluate every visible row independently so one screenshot can create
+ * multiple records. Invalid/truncated rows are skipped, not guessed.
+ */
+export function evaluateBountyExtraction(
+  rawExtraction: unknown,
+  options: { now?: Date; homeServer?: string } = {},
+): BountyRuleEvaluation {
+  const record = asRecord(rawExtraction);
+  if (!record) {
+    return { ok: false, code: "UNSUPPORTED_REPORT", message: UNSUPPORTED_REPORT_MESSAGE };
+  }
+
+  const reportType = reportTypeFrom(record.reportType);
+  if (reportType !== "BOUNTY_PLUNDER" || record.isSupportedReport === false) {
+    return { ok: false, code: "UNSUPPORTED_REPORT", message: UNSUPPORTED_REPORT_MESSAGE };
+  }
+
+  const confidence = numericConfidence(record.confidence);
+  if (confidence < MIN_EXTRACTION_CONFIDENCE) {
+    return { ok: false, code: "INVALID_REPORT", message: LOW_CONFIDENCE_MESSAGE };
+  }
+
+  const homeServer = options.homeServer ?? HOME_SERVER_ID;
+  const notes = cleanVisibleText(record.notes);
+  const rows = Array.isArray(record.bountyRecords) ? record.bountyRecords : [];
+
+  const candidates: Array<{
+    offender: unknown;
+    battleTimeRaw: unknown;
+    battleTimeIso: unknown;
+  }> = [];
+
+  for (const row of rows) {
+    const item = asRecord(row);
+    if (!item) continue;
+
+    candidates.push({
+      offender:
+        item.offender ??
+        item.bountyOffender ??
+        (item.rawDisplayName ? item : null),
+      battleTimeRaw: item.battleTimeRaw,
+      battleTimeIso: item.battleTimeIso,
+    });
+  }
+
+  // Backward-compatible fallback for older model responses / a single card.
+  if (candidates.length === 0) {
+    candidates.push({
+      offender: record.bountyOffender,
+      battleTimeRaw: record.battleTimeRaw,
+      battleTimeIso: record.battleTimeIso,
+    });
+  }
+
+  const decisions: ViolationDecision[] = [];
+  const seen = new Set<string>();
+  let skipped = 0;
+
+  for (const candidate of candidates) {
+    const offender = parsePlayerIdentity(candidate.offender, homeServer);
+    if (!offender) {
+      skipped += 1;
+      continue;
+    }
+
+    const battleTimestamp = normalizeBattleTimestamp(
+      candidate.battleTimeRaw,
+      candidate.battleTimeIso,
+      options.now,
+    );
+    if (!battleTimestamp) {
+      skipped += 1;
+      continue;
+    }
+
+    const key = `${offender.alliance}|${offender.displayName}|${battleTimestamp}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const isViolation = offender.server === homeServer;
+    decisions.push({
+      reportType: "BOUNTY_PLUNDER",
+      offendingAlliance: offender.alliance,
+      offendingPlayer: offender.displayName,
+      offendingServer: offender.server,
+      victimPlayer: null,
+      battleTimestamp,
+      battleTimeRaw:
+        cleanVisibleText(candidate.battleTimeRaw) ||
+        cleanVisibleText(candidate.battleTimeIso),
+      isViolation,
+      reason: buildReason(
+        "BOUNTY_PLUNDER",
+        offender.server,
+        offender.alliance,
+        isViolation,
+      ),
+      confidence,
+      notes,
+    });
+  }
+
+  if (decisions.length === 0) {
+    return { ok: false, code: "INVALID_REPORT", message: INVALID_REPORT_MESSAGE };
+  }
+
+  return { ok: true, decisions, skipped };
 }

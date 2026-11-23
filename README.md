@@ -34,12 +34,12 @@ GitHub Pages (static HTML/JS/CSS)
 
 | 类型 | 界面识别 | 违规方唯一来源 | 计分条件 |
 | --- | --- | --- | --- |
-| `BOUNTY_PLUNDER` | 任务记录 / `Görev Kaydı` / Mission Record 列表卡片，无 VS | 卡片上的掠夺者 | 该玩家属于 837 |
+| `BOUNTY_PLUNDER` | 任务记录 / `Görev Kaydı` / Mission Records 列表，无 VS | 每个完整记录行上的掠夺者 | 该玩家属于 837 |
 | `RESOURCE_TILE` | 矿区争夺 / Resource Tile / Mine 的左右 VS 战报 | **右侧**玩家 | 右侧玩家属于 837 |
 | `TRUCK_PLUNDER` | 贸易货车 / Trade Truck 的左右 VS 战报，或详情/防守日志（Ticaret Muhafızları / Savaş günlüğü） | VS 右侧玩家，或战斗日志行中的进攻玩家 | 该攻击者属于 837 |
 
 1. 左侧上传者永远是受害者，**永不作为违规方**。VS 类型只读取 `rightPlayer`。
-2. 赏金类型只读卡片里的掠夺者，不读任一 VS 侧。
+2. 赏金类型读取每条完整任务记录行里的掠夺者，不读任一 VS 侧；同一张列表截图可以生成多条记录。
 3. 贸易货车“详情”界面中，只读取「战斗记录 / Savaş günlüğü」行里的进攻玩家，并选取最新时间的一条；顶部弹窗、系统通知和其他玩家名字一律忽略，避免把别的 #838 通知误当成这次进攻。
 4. 违规方名字前的 `#XXX` 决定服务器；无前缀或明确 `#837` 视为 837 本服。
 5. 若原始名字完全没有外服号，但模型声称看到了外服号，系统只在“外服”方向接受兜底，只会少计，不会误把外服算成本服。
@@ -47,7 +47,7 @@ GitHub Pages (static HTML/JS/CSS)
 7. 唯一索引 `(report_type, offending_alliance, offending_player, battle_timestamp)` 防重复计分。
 8. 未识别到联盟时记入 `UNKNOWN`，前端显示“未知联盟”。
 
-一张截图按一条战报处理；赏金多卡片列表请提交最上方完整卡片或先裁剪。贸易货车详情日志如果显示多条记录，当前版本只取时间最新的一条。
+赏金任务记录列表会一次提取所有完整可见行，并逐条入库；被截断或时间不可读的行会跳过。其他类型仍按一张截图一条战报处理。贸易货车详情日志如果显示多条记录，当前版本只取时间最新的一条；后续可复用赏金的多行机制。
 
 ## 目录结构
 
@@ -230,12 +230,12 @@ pnpm start
 ## 四、测试
 
 ```bash
-pnpm test        # 26 个测试
+pnpm test        # 28 个测试
 pnpm typecheck   # TypeScript（Edge entry 由 Supabase 部署时校验）
 pnpm build       # 静态导出
 ```
 
-`tests/rules.test.ts` 覆盖 4 张真实战报的关键路径：赏金本服/外服、矿区防算反、货车 `#838` 豁免、`[d00m]RAKK` 本服计分、特殊字符和 UTC 时间。
+`tests/rules.test.ts` 覆盖真实战报的关键路径：赏金本服/外服、赏金列表多行批量判定、矿区防算反、货车 `#838` 豁免、`[d00m]RAKK` 本服计分、特殊字符和 UTC 时间。
 
 `tests/deepseek.test.ts` 用 mock fetch 验证：多模态 `image_url`、JSON Output、`thinking=disabled`、HEIC 拒绝、空/非法 JSON 和上游 HTTP 错误；不需要真实 API key。`tests/image.test.ts` 覆盖 JPEG/PNG/WebP 签名和 HEIC 拒绝。
 
@@ -299,6 +299,7 @@ Body:   {"action":"list"}
 ## 设计边界
 
 - **公开匿名上传**：函数 `verify_jwt=false` 且未做登录/频率限制。公开站点上线前强烈建议增加 Cloudflare Turnstile、访问口令或按 IP/用户的限流；否则 DeepSeek 和 Storage 费用可能被滥用。管理删除函数同样 `verify_jwt=false`，但必须携带服务端口令，不能匿名调用。
+- **赏金多行记录共享一张证据图**：同一张列表截图产生的多条记录共用同一个 Storage 对象。管理员删除单条记录时，会先确认没有其他记录引用该图片，再删除图片，避免误删其他行的证据。
 - **AI 仍可能误读**：低置信度/字段不全会拒绝入库，但自动判定仍建议由联盟管理抽查。误判时可通过站点管理面板同时删除记录、证据图片和榜单计数，也可直接在 Supabase 中删除对应行和 Storage 对象。
 - **时间为游戏界面显示值**：截图不带时区，本实现按业务要求将其视为 UTC。如果游戏实际时区不同，需要同时调整 `_shared/rules.ts` 的归一化和前端展示。
 - **分钟级去重**：同一联盟、玩家、类型在同一分钟的重复战报会判为重复；唯一索引字段与产品要求一致。

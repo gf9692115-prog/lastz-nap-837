@@ -4,7 +4,6 @@ import { corsHeaders } from "../_shared/cors.ts";
 import {
   DEEPSEEK_BASE_URL_DEFAULT,
   DEEPSEEK_MODEL_DEFAULT,
-  HOME_SERVER_ID,
   MAX_UPLOAD_BYTES,
   REPORTS_BUCKET_DEFAULT,
   UNKNOWN_ALLIANCE,
@@ -18,11 +17,15 @@ import {
   detectSupportedImageMime,
   extensionForMime,
 } from "../_shared/image.ts";
-import { evaluateExtraction } from "../_shared/rules.ts";
+import {
+  evaluateBountyExtraction,
+  evaluateExtraction,
+} from "../_shared/rules.ts";
 import type {
   UploadApiResponse,
   UploadOutcomeCode,
   UploadResponseRecord,
+  ViolationDecision,
 } from "../_shared/types.ts";
 
 const NO_STORE_HEADERS = {
@@ -240,76 +243,141 @@ Deno.serve(async (request: Request): Promise<Response> => {
       throw error;
     }
 
-    const evaluation = evaluateExtraction(extraction);
-    if (!evaluation.ok) {
-      await removeEvidence(supabase, bucket, objectPath);
-      uploadedPath = null;
-      return failure(evaluation.code, evaluation.message, 422);
+    let decisions: ViolationDecision[];
+    let skippedRows = 0;
+
+    if (extraction.reportType === "BOUNTY_PLUNDER") {
+      const batch = evaluateBountyExtraction(extraction);
+      if (!batch.ok) {
+        await removeEvidence(supabase, bucket, objectPath);
+        uploadedPath = null;
+        return failure(batch.code, batch.message, 422);
+      }
+      decisions = batch.decisions;
+      skippedRows = batch.skipped;
+    } else {
+      const evaluation = evaluateExtraction(extraction);
+      if (!evaluation.ok) {
+        await removeEvidence(supabase, bucket, objectPath);
+        uploadedPath = null;
+        return failure(evaluation.code, evaluation.message, 422);
+      }
+      decisions = [evaluation.decision];
     }
 
-    const decision = evaluation.decision;
-    const record: UploadResponseRecord = {
-      reportType: decision.reportType,
-      offendingAlliance: decision.offendingAlliance,
-      offendingPlayer: decision.offendingPlayer,
-      offendingServer: decision.offendingServer,
-      victimPlayer: decision.victimPlayer,
-      battleTimestamp: decision.battleTimestamp,
-      isViolation: decision.isViolation,
-      reason: decision.reason,
-      imageUrl,
-    };
+    const inserted: UploadResponseRecord[] = [];
+    let duplicateCount = 0;
+    let databaseFailureCount = 0;
 
-    const { error: insertError } = await supabase.from("violations").insert({
-      report_type: decision.reportType,
-      offending_alliance: decision.offendingAlliance,
-      offending_player: decision.offendingPlayer,
-      offending_server: decision.offendingServer,
-      victim_player: decision.victimPlayer,
-      battle_timestamp: decision.battleTimestamp,
-      is_violation: decision.isViolation,
-      reason: decision.reason,
-      image_url: imageUrl,
-    });
+    for (const decision of decisions) {
+      const record: UploadResponseRecord = {
+        reportType: decision.reportType,
+        offendingAlliance: decision.offendingAlliance,
+        offendingPlayer: decision.offendingPlayer,
+        offendingServer: decision.offendingServer,
+        victimPlayer: decision.victimPlayer,
+        battleTimestamp: decision.battleTimestamp,
+        isViolation: decision.isViolation,
+        reason: decision.reason,
+        imageUrl,
+      };
 
-    if (insertError) {
+      const { error: insertError } = await supabase.from("violations").insert({
+        report_type: decision.reportType,
+        offending_alliance: decision.offendingAlliance,
+        offending_player: decision.offendingPlayer,
+        offending_server: decision.offendingServer,
+        victim_player: decision.victimPlayer,
+        battle_timestamp: decision.battleTimestamp,
+        is_violation: decision.isViolation,
+        reason: decision.reason,
+        image_url: imageUrl,
+      });
+
+      if (insertError) {
+        if (insertError.code === "23505") {
+          duplicateCount += 1;
+          continue;
+        }
+
+        databaseFailureCount += 1;
+        console.error(
+          `[upload-report] database insert failed for ${decision.offendingPlayer}:`,
+          insertError.message,
+        );
+        continue;
+      }
+
+      inserted.push(record);
+    }
+
+    if (inserted.length === 0) {
       await removeEvidence(supabase, bucket, objectPath);
       uploadedPath = null;
 
-      if (insertError.code === "23505") {
-        return failure("DUPLICATE", "This report has already been recorded. Do not submit it again.", 409);
+      if (duplicateCount > 0 && databaseFailureCount === 0) {
+        return failure(
+          "DUPLICATE",
+          `This report has already been recorded. ${duplicateCount} ${duplicateCount === 1 ? "row was" : "rows were"} skipped as duplicates.`,
+          409,
+        );
       }
 
-      console.error("[upload-report] database insert failed:", insertError.message);
       return failure("DATABASE_ERROR", "Could not save this report. Please try again.", 500);
     }
 
     uploadedPath = null;
 
-    console.info(
-      `[upload-report] recorded type=${decision.reportType} server=#${decision.offendingServer} violation=${decision.isViolation} alliance=${decision.offendingAlliance}`,
-    );
+    const violations = inserted.filter((record) => record.isViolation);
+    const external = inserted.filter((record) => !record.isViolation);
+    const messageParts: string[] = [];
 
-    if (decision.isViolation) {
-      return jsonResponse(
-        {
-          ok: true,
-          code: "VIOLATION_RECORDED",
-          message: `Violation recorded: 1 hit counted for [${friendlyAlliance(
-            decision.offendingAlliance,
-          )}].`,
-          record,
-        },
-        201,
+    if (violations.length > 0) {
+      const alliances = Array.from(
+        new Set(violations.map((record) => friendlyAlliance(record.offendingAlliance))),
+      );
+      messageParts.push(
+        `${violations.length} violation${violations.length === 1 ? "" : "s"} recorded for ${alliances.map((alliance) => `[${alliance}]`).join(", ")}.`,
       );
     }
+
+    if (external.length > 0) {
+      messageParts.push(
+        `${external.length} external record${external.length === 1 ? "" : "s"} kept for audit.`,
+      );
+    }
+
+    if (duplicateCount > 0) {
+      messageParts.push(
+        `${duplicateCount} duplicate${duplicateCount === 1 ? "" : "s"} skipped.`,
+      );
+    }
+
+    if (skippedRows > 0) {
+      messageParts.push(
+        `${skippedRows} unreadable row${skippedRows === 1 ? "" : "s"} skipped.`,
+      );
+    }
+
+    if (databaseFailureCount > 0) {
+      messageParts.push(
+        `${databaseFailureCount} record${databaseFailureCount === 1 ? "" : "s"} could not be saved.`,
+      );
+    }
+
+    const primaryRecord =
+      inserted.find((record) => record.isViolation) ?? inserted[0];
+    console.info(
+      `[upload-report] recorded ${inserted.length} record(s); ${violations.length} violation(s), ${external.length} external, ${duplicateCount} duplicate(s)`,
+    );
 
     return jsonResponse(
       {
         ok: true,
-        code: "EXTERNAL_SERVER",
-        message: `This opponent is from external Server #${decision.offendingServer}. Cross-server raids do not count against the Server ${HOME_SERVER_ID} NAP.`,
-        record,
+        code: violations.length > 0 ? "VIOLATION_RECORDED" : "EXTERNAL_SERVER",
+        message: messageParts.join(" "),
+        record: primaryRecord,
+        records: inserted,
       },
       201,
     );

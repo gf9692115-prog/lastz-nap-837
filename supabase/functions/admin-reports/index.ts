@@ -299,14 +299,29 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
     const objectPath = evidenceObjectPath(existing.image_url);
     if (objectPath) {
-      const { error: storageError } = await supabase.storage
-        .from(REPORTS_BUCKET)
-        .remove([objectPath]);
-      if (storageError) {
+      // One screenshot can now back multiple bounty rows. Only remove the
+      // shared evidence object after the last referencing record is gone.
+      const { data: remaining, error: remainingError } = await supabase
+        .from("violations")
+        .select("id")
+        .eq("image_url", existing.image_url)
+        .limit(1);
+
+      if (remainingError) {
         console.error(
-          "[admin-reports] evidence cleanup failed:",
-          storageError.message,
+          "[admin-reports] shared evidence check failed:",
+          remainingError.message,
         );
+      } else if ((remaining ?? []).length === 0) {
+        const { error: storageError } = await supabase.storage
+          .from(REPORTS_BUCKET)
+          .remove([objectPath]);
+        if (storageError) {
+          console.error(
+            "[admin-reports] evidence cleanup failed:",
+            storageError.message,
+          );
+        }
       }
     }
 

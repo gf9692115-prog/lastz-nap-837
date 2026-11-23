@@ -15,6 +15,12 @@ export interface VisionPlayer {
   hasServerTag: boolean;
 }
 
+export interface VisionBountyRecord {
+  offender: VisionPlayer;
+  battleTimeRaw: string;
+  battleTimeIso: string;
+}
+
 export interface VisionExtraction {
   reportType: ReportType | "UNKNOWN";
   isSupportedReport: boolean;
@@ -22,6 +28,7 @@ export interface VisionExtraction {
   battleTimeRaw: string;
   battleTimeIso: string;
   bountyOffender: VisionPlayer;
+  bountyRecords: VisionBountyRecord[];
   leftPlayer: VisionPlayer;
   rightPlayer: VisionPlayer;
   notes: string;
@@ -122,6 +129,7 @@ export interface UploadApiResponse {
   code: UploadOutcomeCode;
   message: string;
   record?: UploadResponseRecord;
+  records?: UploadResponseRecord[];
 }
 
 export interface AdminRecord {

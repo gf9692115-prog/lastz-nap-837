@@ -29,6 +29,7 @@ const extraction = {
   battleTimeRaw: "2026-11-10 15:52:34",
   battleTimeIso: "2026-11-10T15:52:00Z",
   bountyOffender: EMPTY_PLAYER,
+  bountyRecords: [],
   leftPlayer: {
     rawDisplayName: "[.0Lz]Potit Rove",
     playerName: "Potit Rove",
@@ -136,6 +137,71 @@ describe("DeepSeek vision adapter", () => {
     };
     expect(imagePart.image_url.detail).toBe("original");
     expect(imagePart.image_url.url).toMatch(/^data:image\/jpeg;base64,/u);
+  });
+
+  it("normalizes multiple bounty mission-record rows", async () => {
+    fetchMock.mockResolvedValueOnce(
+      completionResponse({
+        ...extraction,
+        reportType: "BOUNTY_PLUNDER",
+        leftPlayer: EMPTY_PLAYER,
+        rightPlayer: EMPTY_PLAYER,
+        bountyOffender: {
+          rawDisplayName: "#837 [W01]jfdhjxbvdvh",
+          playerName: "jfdhjxbvdvh",
+          alliance: "W01",
+          server: "837",
+          hasServerTag: true,
+        },
+        bountyRecords: [
+          {
+            offender: {
+              rawDisplayName: "#837 [W01]jfdhjxbvdvh",
+              playerName: "jfdhjxbvdvh",
+              alliance: "W01",
+              server: "837",
+              hasServerTag: true,
+            },
+            battleTimeRaw: "11-23 18:06",
+            battleTimeIso: "2026-11-23T18:06:00Z",
+          },
+          {
+            offender: {
+              rawDisplayName: "#837 [CUBS]Tokatlı",
+              playerName: "Tokatlı",
+              alliance: "CUBS",
+              server: "837",
+              hasServerTag: true,
+            },
+            battleTimeRaw: "11-23 17:58",
+            battleTimeIso: "2026-11-23T17:58:00Z",
+          },
+          {
+            offender: {
+              rawDisplayName: "#839 [NFNC]MUNCANG 3",
+              playerName: "MUNCANG 3",
+              alliance: "NFNC",
+              server: "839",
+              hasServerTag: true,
+            },
+            battleTimeRaw: "11-23 17:47",
+            battleTimeIso: "2026-11-23T17:47:00Z",
+          },
+        ],
+      }),
+    );
+
+    const result = await analyzeReportImage({
+      bytes: new Uint8Array([0xff, 0xd8, 0xff, 0x00]),
+      mimeType: "image/jpeg",
+      config: CONFIG,
+    });
+
+    expect(result.reportType).toBe("BOUNTY_PLUNDER");
+    expect(result.bountyRecords).toHaveLength(3);
+    expect(result.bountyRecords[1].offender.alliance).toBe("CUBS");
+    expect(result.bountyRecords[2].battleTimeRaw).toBe("11-23 17:47");
+    expect(result.bountyRecords[2].offender.server).toBe("839");
   });
 
   it("rejects HEIC before making a provider request", async () => {

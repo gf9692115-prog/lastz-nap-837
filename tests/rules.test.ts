@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  evaluateBountyExtraction,
   evaluateExtraction,
   normalizeBattleTimestamp,
   parsePlayerIdentity,
@@ -64,6 +65,63 @@ describe("Server 837 NAP rule engine", () => {
     expect(result.decision.offendingServer).toBe("837");
     expect(result.decision.victimPlayer).toBeNull();
     expect(result.decision.battleTimestamp).toBe("2026-11-20T13:22:00.000Z");
+  });
+
+  it("evaluates every visible bounty row from one mission-record list", () => {
+    const result = evaluateBountyExtraction(
+      extraction({
+        reportType: "BOUNTY_PLUNDER",
+        bountyOffender: EMPTY_PLAYER,
+        leftPlayer: EMPTY_PLAYER,
+        rightPlayer: EMPTY_PLAYER,
+        bountyRecords: [
+          {
+            offender: player(
+              "#837 [W01]jfdhjxbvdvh",
+              "jfdhjxbvdvh",
+              "W01",
+              "837",
+              true,
+            ),
+            battleTimeRaw: "11-23 18:06",
+            battleTimeIso: "2026-11-23T18:06:00Z",
+          },
+          {
+            offender: player(
+              "#837 [CUBS]Tokatlı",
+              "Tokatlı",
+              "CUBS",
+              "837",
+              true,
+            ),
+            battleTimeRaw: "11-23 17:58",
+            battleTimeIso: "2026-11-23T17:58:00Z",
+          },
+          {
+            offender: player(
+              "#839 [NFNC]MUNCANG 3",
+              "MUNCANG 3",
+              "NFNC",
+              "839",
+              true,
+            ),
+            battleTimeRaw: "11-23 17:47",
+            battleTimeIso: "2026-11-23T17:47:00Z",
+          },
+        ],
+      }),
+      { now: FIXED_NOW },
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.decisions).toHaveLength(3);
+    expect(result.decisions[0].offendingPlayer).toBe("[W01]jfdhjxbvdvh");
+    expect(result.decisions[0].isViolation).toBe(true);
+    expect(result.decisions[1].offendingAlliance).toBe("CUBS");
+    expect(result.decisions[1].battleTimestamp).toBe("2026-11-23T17:58:00.000Z");
+    expect(result.decisions[2].offendingServer).toBe("839");
+    expect(result.decisions[2].isViolation).toBe(false);
   });
 
   it("exempts an external-server bounty plunderer", () => {

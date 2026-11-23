@@ -162,13 +162,20 @@ export function ResultCard({ result, onDismiss }: ResultCardProps) {
   const presentation =
     PRESENTATIONS[result.code] ?? PRESENTATIONS.INTERNAL_ERROR;
   const Icon = presentation.icon;
-  const record = result.record;
+  const records =
+    result.records && result.records.length > 0
+      ? result.records
+      : result.record
+        ? [result.record]
+        : [];
+  const record = records[0];
   const recordPlayer = record
     ? playerNameWithoutAlliance(
         record.offendingPlayer,
         record.offendingAlliance,
       )
     : "";
+  const hasViolation = records.some((item) => item.isViolation);
 
   return (
     <div
@@ -228,8 +235,8 @@ export function ResultCard({ result, onDismiss }: ResultCardProps) {
             {result.message}
           </p>
 
-          {record ? (
-            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-white/[0.08] pt-3.5 sm:grid-cols-4">
+          {records.length === 1 && record ? (
+            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-3.5 sm:grid-cols-4">
               <Detail label="Report type">
                 {reportTypeLabel(record.reportType)}
               </Detail>
@@ -250,20 +257,77 @@ export function ResultCard({ result, onDismiss }: ResultCardProps) {
             </dl>
           ) : null}
 
-          {record?.isViolation ? (
-            <div className="mt-3.5 flex items-center gap-2 border-t border-white/[0.06] pt-3">
+          {records.length > 1 ? (
+            <div className="mt-4 border-t border-line pt-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[9px] uppercase tracking-[0.14em]">
+                <span className="text-ash">
+                  Batch result / {records.length} records
+                </span>
+                <span className="text-ash">
+                  {records.filter((item) => item.isViolation).length} scored ·{" "}
+                  {records.filter((item) => !item.isViolation).length} external
+                </span>
+              </div>
+              <ul className="mt-2 divide-y divide-line">
+                {records.map((item) => {
+                  const name = playerNameWithoutAlliance(
+                    item.offendingPlayer,
+                    item.offendingAlliance,
+                  );
+
+                  return (
+                    <li
+                      key={`${item.offendingAlliance}-${item.offendingPlayer}-${item.battleTimestamp}`}
+                      className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2.5"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          className={`font-mono text-[8px] uppercase tracking-[0.1em] ${
+                            item.isViolation
+                              ? "text-acid-300"
+                              : "text-signal-cyan"
+                          }`}
+                        >
+                          {item.isViolation ? "Scored" : "External"}
+                        </span>
+                        <span className="shrink-0 font-mono text-[11px] font-semibold text-bone">
+                          {allianceBadge(item.offendingAlliance)}
+                        </span>
+                        <span
+                          className="truncate text-[11px] text-[#c9b6aa]"
+                          title={name}
+                        >
+                          {name}
+                        </span>
+                      </div>
+                      <span className="shrink-0 font-mono text-[9px] tracking-[0.04em] text-ash">
+                        {formatBattleTimestamp(item.battleTimestamp)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+
+          {hasViolation ? (
+            <div className="mt-3.5 flex items-center gap-2 border-t border-line pt-3">
               <BadgeCheck className="h-3.5 w-3.5 text-acid" />
-              <p className="text-[11px] leading-relaxed text-zinc-400">
-                This record is now in the public evidence feed and its screenshot is archived.
+              <p className="text-[11px] leading-relaxed text-ash">
+                {records.length === 1
+                  ? "This record is now in the public evidence feed and its screenshot is archived."
+                  : "The scored records are now in the public evidence feed; the shared screenshot is archived."}
               </p>
             </div>
           ) : null}
 
           {result.code === "EXTERNAL_SERVER" && record ? (
-            <div className="mt-3.5 flex items-center gap-2 border-t border-white/[0.06] pt-3">
+            <div className="mt-3.5 flex items-center gap-2 border-t border-line pt-3">
               <Globe2 className="h-3.5 w-3.5 text-signal-cyan" />
-              <p className="text-[11px] leading-relaxed text-zinc-400">
-                External Server #{record.offendingServer} activity is kept for audit only and does not enter this server&apos;s leaderboard.
+              <p className="text-[11px] leading-relaxed text-ash">
+                {records.length === 1
+                  ? `External Server #${record.offendingServer} activity is kept for audit only and does not enter this server's leaderboard.`
+                  : "External-server records are kept for audit only and do not enter this server's leaderboard."}
               </p>
             </div>
           ) : null}

@@ -11,6 +11,12 @@ export interface VisionPlayer {
   hasServerTag: boolean;
 }
 
+export interface VisionBountyRecord {
+  offender: VisionPlayer;
+  battleTimeRaw: string;
+  battleTimeIso: string;
+}
+
 export interface VisionExtraction {
   reportType: ReportType | "UNKNOWN";
   isSupportedReport: boolean;
@@ -18,6 +24,7 @@ export interface VisionExtraction {
   battleTimeRaw: string;
   battleTimeIso: string;
   bountyOffender: VisionPlayer;
+  bountyRecords: VisionBountyRecord[];
   leftPlayer: VisionPlayer;
   rightPlayer: VisionPlayer;
   notes: string;
@@ -46,6 +53,14 @@ export interface ViolationDecision {
 
 export type RuleEvaluation =
   | { ok: true; decision: ViolationDecision }
+  | {
+      ok: false;
+      code: "UNSUPPORTED_REPORT" | "INVALID_REPORT";
+      message: string;
+    };
+
+export type BountyRuleEvaluation =
+  | { ok: true; decisions: ViolationDecision[]; skipped: number }
   | {
       ok: false;
       code: "UNSUPPORTED_REPORT" | "INVALID_REPORT";
@@ -82,4 +97,5 @@ export interface UploadApiResponse {
   code: UploadOutcomeCode;
   message: string;
   record?: UploadResponseRecord;
+  records?: UploadResponseRecord[];
 }
