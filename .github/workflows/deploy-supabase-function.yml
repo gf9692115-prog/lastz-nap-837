@@ -44,16 +44,6 @@ jobs:
             --data '{"query":"grant select, insert, update, delete on table public.violations to service_role;"}'
           echo "service_role privileges ensured"
 
-      - name: Remove duplicate OCR test row
-        shell: bash
-        run: |
-          BODY=$(jq -n --arg query "delete from public.violations where id = 'bcbc0e3a-99bb-45f7-9546-5abaec8bd89b' and offending_player = '[W01]jfdhjxbvdvh' returning id;" '{query: $query}')
-          curl --fail-with-body -sS -X POST \
-            "https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query" \
-            -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
-            -H "Content-Type: application/json" \
-            --data "$BODY"
-
       - name: Deploy upload-report
         run: |
           supabase functions deploy upload-report \
